@@ -2,10 +2,14 @@ package com.github.arzt.tensor
 
 import scala.reflect.ClassTag
 
+import scala.languageFeature.implicitConversions
+
+import scala.language.implicitConversions
+
 object TensorImplicits {
 
-  case class WithOffset[T: ClassTag] private(data: Array[T], offset: Int) {
-    def asTensorOfDim(dim: Int*): Tensor[T] =
+  case class WithOffset[T: ClassTag] private (data: Array[T], offset: Int) {
+    def asTensor(dim: Int*): Tensor[T] =
       Tensor[T](dim.toVector, data, offset)
   }
 
@@ -13,11 +17,15 @@ object TensorImplicits {
 
     def asVector(): Tensor[T] = Tensor(Vector(data.length), data)
 
-    def asTensorOfDim(dim: Int*): Tensor[T] = Tensor(dim.toVector, data)
+    def asTensor(dim: Int*): Tensor[T] = Tensor(dim.toVector, data)
 
-    def asRow: Tensor[T] = Tensor(Vector(data.length), data)
+    def asRows(rows: Int): Tensor[T] = asTensor(rows, data.length / rows)
 
-    def asCol: Tensor[T] = Tensor(Vector(data.length, 1), data)
+    def asCols(cols: Int): Tensor[T] = asTensor(data.length / cols, cols)
+
+    def asRow: Tensor[T] = asTensor(data.length)
+
+    def asCol: Tensor[T] = asCols(1)
 
     def withOffset(offset: Int): WithOffset[T] = WithOffset(data, offset)
   }
@@ -38,36 +46,39 @@ object TensorImplicits {
     def ||(that: Tensor[Boolean]): Tensor[Boolean] = tensor.combine[Boolean, Boolean](that, _ || _)
   }
 
-  implicit class MathOps[T >: AnyVal : ClassTag](tensor: Tensor[T])(implicit numeric: Numeric[T]) {
-    def test = tensor.map(x => numeric.minus(x, x))
+  implicit class NumericTensorOps[T](tensor: Tensor[T])(implicit num: Numeric[T]) {
+
+    def +(a: T): Tensor[T] = tensor.map(num.plus(_, a))
+
+    def +(a: Tensor[T]): Tensor[T] = tensor.combine[T, T](a, (x, y) => num.plus(x, y))
+
+    def -(a: T)(implicit num: Numeric[T]): Tensor[T] = tensor.map(num.minus(_, a))
+
+    def -(a: Tensor[T])(implicit num: Numeric[T]): Tensor[T] = tensor.combine[T, T](a, num.minus)
+
+    def *(a: T): Tensor[T] = tensor.map(x => num.times(x, a))
+
+    def *(a: Tensor[T]): Tensor[T] = tensor.combine[T, T](a, num.times)
+
   }
 
-  implicit def int2Index(i: Int): Index = dim =>
-    if (i < 0) Seq(dim + i) else Seq(i)
+  implicit def int2Index(i: Int): Index = dim => Seq(((i % dim) + dim) % dim)
 
   implicit def seq2Indexed(seq: Seq[Int]): Index = _ => seq
 
   implicit def bool2index(seq: Seq[Boolean]): Index = dimSize => {
+    Iterator
+      .continually(seq)
     assert(dimSize == seq.size)
     (0 until dimSize).view.filter(seq)
   }
 
-  implicit def tripleToIndex(t: (Int, Int, Int)): Index =
-    (dim: Int) => t match {
-      case (from, to, by) =>
-        if (from > -1) {
-          if (to > -1) {
-            Range.inclusive(from, to, by)
-          } else {
-            Range.inclusive(from, dim + to, by)
-          }
-        } else {
-          if (to > -1) {
-            Range.inclusive(dim + from, to, by)
-          } else {
-            Range.inclusive(dim + from, dim + to, by)
-          }
-        }
+  implicit def tripleToIndex(tripple: (Int, Int, Int)): Index =
+    dim => {
+      val (from, to, by) = tripple
+      val fromNorm = ((dim + from) % dim + dim) % dim
+      val toNorm = ((dim + to) % dim + dim) % dim
+      Range.inclusive(fromNorm, toNorm, by)
     }
 
   implicit def intTensorToIndex(t: Tensor[Int]): Index = t.toSeq
@@ -78,6 +89,8 @@ object TensorImplicits {
 
   val $colon$colon: Index = dimSize => 0 until dimSize
 
+  val $minus$colon$colon: Index = dimSize => (dimSize - 1) to 0 by -1
+
   implicit class IntOps(b: Int) {
     def ::(a: Int): (Int, Int, Int) = (a, b, 1)
   }
@@ -85,7 +98,6 @@ object TensorImplicits {
   implicit class TrippleOps(t: (Int, Int, Int)) {
     def ::(a: Int): (Int, Int, Int) = (a, t._1, t._2)
   }
-
   val a: Index = 1 :: 2 :: 3
 
   val b: Index = ::
