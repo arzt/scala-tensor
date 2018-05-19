@@ -4,6 +4,8 @@ name := "scala-tensor"
 
 version := "0.0.0-SNAPSHOT"
 
+organization := "com.github.arzt"
+
 scalaVersion := "2.11.12"
 
 libraryDependencies ++= Seq(
