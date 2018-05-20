@@ -48,37 +48,34 @@ sealed trait Tensor[T] {
 
   def update(c: Int, b: Int, a: Int, v: T): Unit = this(index(stride, c, b, a)) = v
 
-  def apply(a: SeqIndex): Tensor[T] = {
-    new ViewTensor(Vector(a.size), this, a.toArray)
+  def apply(a: Index): Tensor[T] = {
+    val sa = a(shape(0))
+    new ViewTensor(Vector(sa.size), this, sa.toArray)
   }
 
-  def apply(b: SeqIndex, a: SeqIndex): Tensor[T] = {
-    val mapping = indices2(stride, b.toArray, a.toArray)
-    new ViewTensor(Vector(b.size, a.size), this, mapping)
+  def apply(b: Index, a: Index): Tensor[T] = {
+    val u = b(shape(0))
+    val v = a(shape(1))
+    val mapping = indices(stride, u.toArray, v.toArray)
+    new ViewTensor(Vector(u.size, v.size), this, mapping)
   }
 
-  def apply(c: SeqIndex, b: SeqIndex, a: SeqIndex): Tensor[T] = {
-    val mapping = indices(stride, c.view, b.view, a.view).toArray
-    new ViewTensor(Vector(c.size, b.size, a.size), this, mapping)
+  def apply(c: Index, b: Index, a: Index): Tensor[T] = {
+    val sa = c(shape(0)).toArray
+    val sb = b(shape(1)).toArray
+    val sc = a(shape(2)).toArray
+    val mapping = indices(stride, sa, sb, sc)
+    new ViewTensor(Vector(sa.length, sb.length, sc.length), this, mapping)
   }
 
-  def apply(d: SeqIndex, c: SeqIndex, b: SeqIndex, a: SeqIndex): Tensor[T] = {
-    val mapping = indices(stride, d.view, c.view, b.view, a.view)
-    new ViewTensor[T](Vector(d.size, c.size, b.size, a.size), this, mapping)
+  def apply(d: Index, c: Index, b: Index, a: Index): Tensor[T] = {
+    val sd = d(shape(0)).toArray
+    val sc = c(shape(1)).toArray
+    val sb = b(shape(2)).toArray
+    val sa = a(shape(3)).toArray
+    val mapping = indices(stride, sd, sc, sb, sa)
+    new ViewTensor(Vector(sd.length, sc.length, sb.length, sa.length), this, mapping)
   }
-
-  def apply(a: Index): Tensor[T] = apply(a(shape(0)))
-
-  def apply(a: Index, b: Index): Tensor[T] = {
-    val i = shape(0)
-    val u = a(i)
-    val v = b(shape(1))
-    apply(u, v)
-  }
-
-  def apply(a: Index, b: Index, c: Index): Tensor[T] = apply(a(shape(0)), b(shape(1)), c(shape(2)))
-
-  def apply(a: Index, b: Index, c: Index, d: Index): Tensor[T] = apply(a(shape(0)), b(shape(1)), c(shape(2)), d(shape(3)))
 
   def update(that: Tensor[T]): Unit = {
     var i = 0
@@ -88,15 +85,16 @@ sealed trait Tensor[T] {
     }
   }
 
-  def update(a: SeqIndex, that: Tensor[T]): Unit = apply(a)() = that
+  def update(a: Index, that: Tensor[T]): Unit = apply(a)() = that
 
-  def update(b: SeqIndex, a: SeqIndex, that: Tensor[T]): Unit = apply(b, a)() = that
+  def update(b: Index, a: Index, that: Tensor[T]): Unit = apply(b, a)() = that
 
-  def update(c: SeqIndex, b: SeqIndex, a: SeqIndex, that: Tensor[T]): Unit = apply(c, b, a)() = that
+  def update(c: Index, b: Index, a: Index, that: Tensor[T]): Unit = apply(c, b, a)() = that
 
   def :=(that: Tensor[T]): Unit = this() = that
 
   override def toString: String = {
+    /*
     val split = this.map(_.toString.split('\n'))
     val maxHeight = split.toSeq.map(_.length).max
     val maxWidth = split.toSeq.map(_.map(_.length).max).max
@@ -119,6 +117,8 @@ sealed trait Tensor[T] {
     val tap = string.toSeq.sliding(cols, cols).map(x => x.reduce(_ ++ _) :+ '\n')
       .reduce(_ ++ _)
     new String(tap)
+    * */
+    map(_.toString)().toSeq.mkString("[", ",", "]")
   }
 
   def combine[B, R](that: Tensor[B], f: (T, B) => R): Tensor[R] = new CombineTensor[R, T, B](this, that, f)

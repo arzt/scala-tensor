@@ -1,49 +1,60 @@
 package com.github.arzt
 
-import scala.collection.mutable
-
 package object tensor {
   type Index = Int => Seq[Int]
-  type SeqIndex = Seq[Int]
 
-  def indices(stride: Array[Int], d: Seq[Int], c: Seq[Int], b: Seq[Int], a: Seq[Int]): Seq[Int] =
-    for (
-      di <- d;
-      h = stride(0) * di;
-      ci <- c;
-      i = stride(1) * ci + h;
-      bi <- b;
-      j = stride(2) * bi + i;
-      ai <- a
-    ) yield {
-      j + ai
+  def indices(stride: Array[Int], d: Array[Int], c: Array[Int], b: Array[Int], a: Array[Int]): Array[Int] = {
+    val n = d.length * c.length * b.length * a.length
+    val output = new Array[Int](n)
+    var id = 0
+    var i = 0
+    while (id < d.length) {
+      val jd = stride(0) * d(id)
+      var ic = 0
+      while (ic < c.length) {
+        val jc = jd + stride(1) * c(ic)
+        var ib = 0
+        while (ib < b.length) {
+          val jb = jc + stride(2) * b(ib)
+          var ia = 0
+          while (ia < a.length) {
+            output(i) = jb + a(ia)
+            ia += 1
+            i += 1
+          }
+          ib += 1
+        }
+        ic += 1
+      }
+      id += 1
     }
+    output
+  }
 
-  def indices(stride: Array[Int], c: Seq[Int], b: Seq[Int], a: Seq[Int]): Seq[Int] = {
-    for (
-      ci <- c;
-      i = stride(0) * ci;
-      bi <- b;
-      j = stride(1) * bi + i;
-      ai <- a
-    ) yield {
-      j + ai
+  def indices(stride: Array[Int], c: Array[Int], b: Array[Int], a: Array[Int]): Array[Int] = {
+    val n = c.length * b.length * a.length
+    val output = new Array[Int](n)
+    var ic = 0
+    var i = 0
+    while (ic < c.length) {
+      val j = stride(0) * c(ic)
+      var ib = 0
+      while (ib < b.length) {
+        val k = j + stride(1) * b(ib)
+        var ia = 0
+        while (ia < a.length) {
+          output(i) = k + a(ia)
+          ia += 1
+          i += 1
+        }
+        ib += 1
+      }
+      ic += 1
     }
+    output
   }
 
   def indices(stride: Array[Int], b: Array[Int], a: Array[Int]): Array[Int] = {
-    val wb = mutable.WrappedArray.make[Int](b)
-    val wa = mutable.WrappedArray.make[Int](a)
-    (for (
-      bi <- wb;
-      j = stride(0) * bi;
-      ai <- wa
-    ) yield {
-      j + ai
-    }).toArray
-  }
-
-  def indices2(stride: Array[Int], b: Array[Int], a: Array[Int]): Array[Int] = {
     val n = b.length * a.length
     val output = new Array[Int](n)
     var ib = 0

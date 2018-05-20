@@ -15,8 +15,6 @@ object TensorImplicits {
 
   implicit class ArrayOps[T: ClassTag](data: Array[T]) {
 
-    def asVector(): Tensor[T] = Tensor(Vector(data.length), data)
-
     def asTensor(dim: Int*): Tensor[T] = Tensor(dim.toVector, data)
 
     def asRows(rows: Int): Tensor[T] = asTensor(rows, data.length / rows)
@@ -33,17 +31,17 @@ object TensorImplicits {
   implicit class BooleanTensorOps(tensor: Tensor[Boolean]) {
     def unary_! : Tensor[Boolean] = tensor.map(!_)
 
-    def !=(b: Boolean): Tensor[Boolean] = tensor.map(_ != b)
-
     def &&(b: Boolean): Tensor[Boolean] = tensor.map(_ && b)
 
     def ||(b: Boolean): Tensor[Boolean] = tensor.map(_ || b)
 
-    def !=(that: Tensor[Boolean]): Tensor[Boolean] = tensor.combine[Boolean, Boolean](that, _ != _)
+    def ^(b: Boolean): Tensor[Boolean] = tensor.map(_ ^ b)
 
     def &&(that: Tensor[Boolean]): Tensor[Boolean] = tensor.combine[Boolean, Boolean](that, _ && _)
 
     def ||(that: Tensor[Boolean]): Tensor[Boolean] = tensor.combine[Boolean, Boolean](that, _ || _)
+
+    def ^(that: Tensor[Boolean]): Tensor[Boolean] = tensor.combine[Boolean, Boolean](that, _ ^ _)
   }
 
   implicit class NumericTensorOps[T](tensor: Tensor[T])(implicit num: Numeric[T]) {
@@ -64,7 +62,7 @@ object TensorImplicits {
 
   implicit def int2Index(i: Int): Index = dim => Seq(((i % dim) + dim) % dim)
 
-  implicit def seq2Indexed(seq: Seq[Int]): Index = _ => seq
+  implicit def seq2Index(seq: Seq[Int]): Index = _ => seq
 
   implicit def bool2index(seq: Seq[Boolean]): Index = dimSize => {
     Iterator
@@ -98,11 +96,4 @@ object TensorImplicits {
   implicit class TrippleOps(t: (Int, Int, Int)) {
     def ::(a: Int): (Int, Int, Int) = (a, t._1, t._2)
   }
-  val a: Index = 1 :: 2 :: 3
-
-  val b: Index = ::
-
-  val c: Index = Seq[Boolean](true, false)
-
-  val d: Index = Seq[Int](1, 2, 3, 4, 0)
 }

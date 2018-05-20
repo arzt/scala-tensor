@@ -9,6 +9,7 @@ class TensorSpec extends Specification {
       val data = Array[Int](0, 1, 2, 3, 4, 5, 6, 7)
       val t1 = Tensor(Vector(2, 4), data)
       val t2 = Tensor(Vector(2, 2, 2), data)
+      t1.isView === false
       t1(0) === 0
       t1(4) === 4
       t1(7) === 7
@@ -21,6 +22,32 @@ class TensorSpec extends Specification {
       t2(0, 1, 0) === 2
       t2(0, 1, 1) === 3
       t2(1, 1, 1) === 7
+    }
+    "tensor with offset" in {
+      val t = Tensor(Vector(1, 1), Array(1, 2, 3), 1)
+      t(0, 0) === 2
+      t.apply(0, 1) === 3
+    }
+    "tensor with data" in {
+      val t = Tensor(Array(1))
+      t(0, 0) === 1
+    }
+    "tesor with data and offset" in {
+      val t = Tensor(Array(1, 2), 1)
+      t(0, 0) === 2
+    }
+    "read 4d tensor" in {
+      val t = Array[Int](
+        1, 2,
+        3, 4,
+        5, 6,
+        7, 8)
+        .asTensor(2, 2, 1, 2)
+      val b = t(::, ::, ::, ::).apply()
+      t(0, 0, 0, 0) === 1
+      t(0, 1, 0, 1) === 4
+      t(1, 1, 0, 1) === 8
+      b === t
     }
     "update elements by index" in {
       val data = Array[Double](
@@ -51,6 +78,26 @@ class TensorSpec extends Specification {
       Tensor(Vector(4, 1), data).toString mustEqual " 1\n 2\n 3\n 4\n"
       Tensor(Vector(1, 4), data).toString mustEqual " 1 2 3 4\n"
     }
+    "equality" in {
+      Array(1).asRow === Array(1).asRow
+      Array(1).asRow !== Array(2).asRow
+      Array(1).asRow !== 4
+    }
+    "as matrix by number of cols" in {
+      val a = Array(1, 2, 3).asCols(3)
+      val b = Tensor(Vector(1, 3), Array(1, 2, 3))
+      a === b
+    }
+    "as column" in {
+      val a = Array(1, 2, 3).asCol
+      val b = Tensor(Vector(3, 1), Array(1, 2, 3))
+      a === b
+    }
+    "with offset" in {
+      val a = Array(1, 2, 3).withOffset(1).asTensor(2)
+      val b = Array(2, 3).asRow
+      a === b
+    }
     "update whole tensor" in {
       val data = Array[Int](
         1, 2, 0, 0,
@@ -60,6 +107,19 @@ class TensorSpec extends Specification {
       val b = Tensor(Vector(2, 4), zeros)
       b := a
       data.toSeq === zeros.toSeq
+    }
+    "update with tensor 1D" in {
+      val a = Array(1, 0, 0, 4).asRow
+      val b = Array(2, 3).asRow
+      a(1 :: 2) = b
+      a === Array(1, 2, 3, 4).asRow
+    }
+    "update with tensor 3D" in {
+      val a = Array(1, 0,
+        0, 4,
+        5, 6).asTensor(3, 1, 2)
+      a(1, ::, ::) = Array(4, 6).asTensor(1, 1, 2)
+      a === Array(1, 0, 4, 6, 5, 6).asTensor(3, 1, 2)
     }
     "copy sub-tensors" in {
       val data = Array[Int](
@@ -127,33 +187,32 @@ class TensorSpec extends Specification {
     "support stepped indexing" in {
       val t = Tensor(Array(0, 1, 2, 3, 4, 5, 6, 7, 8))
       t(1 until 8 by 3).toSeq === Seq(1, 4, 7)
+      t(::).isView === true
+    }
+    "mapping" in {
+      val t = Array(1).asRow.map(_.toString)
+      t(0, 0) === "1"
+      t.isView === true
+      (t(0, 0) = "test") must throwA[UnsupportedOperationException]
     }
     "support addition" in {
       val t = Tensor(Array(1, 2, 3, 4, 5, 6, 7, 8, 9))
       val h = t + 4
       h.toSeq === Array(1, 2, 3, 4, 5, 6, 7, 8, 9).map(_ + 4).toSeq
     }
-    "support tensor addion" in {
-      val a = Tensor(Array(1, 2, 3, 4))
-      val b = Tensor(Array(1, 2, 3, 4))
-      val c = a + b
-      c.toSeq.toArray.toSeq === Array(2, 4, 6, 8).toSeq
-    }
     "reassignment" in {
       val res = Array(0, 0, 0, 0)
-      val a = Array(1, 2, 3, 4)
-      val b = Array(4, 3, 2, 1)
-      val sh = Vector(4)
-      val tres = new ArrayTensor(sh, res)
-      val ta = new ArrayTensor(sh, a)
-      val tb = new ArrayTensor(sh, b)
-      tres := ta + tb
+      val ta = res.asRow
+      val tensor = Array(5, 5, 5, 5).asRow
+      ta() = tensor
       res.toSeq === Array(5, 5, 5, 5).toSeq
     }
     "pointwise ==" in {
       val t = Array(1, 2, 1, 2, 1, 1, 2).asRow
       val exp = Array(false, true, false, true, false, false, true).asRow
+      val exp2 = !exp
       (t == 2) === exp
+      (t != 2) === exp2
     }
     "int seq indexing" in {
       val t = Array(1, 2, 3, 4).asRow
@@ -260,17 +319,36 @@ class TensorSpec extends Specification {
       val b = t(::)
       t === b
     }
-    "math" in {
+    "numeric operations" in {
       val t1 = Array[Double](4, 5).asRow
       t1 + 4 === Array[Double](8, 9).asRow
       t1 - 4 === Array[Double](0, 1).asRow
       t1 * 2 === Array[Double](8, 10).asRow
       val a = Array[Int](1, 2).asRow
       a.map(_ / 2) === Array[Int](0, 1).asRow
+      val a2 = Array(1, 2, 3, 4).asRow
+      val b2 = Array(1, 2, 3, 4).asRow
+      (a2 + b2).isView === true
+      ((a2 + b2)(0) = 5) must throwAn[UnsupportedOperationException]
+      (a2 + b2) === Array(2, 4, 6, 8).asRow
+      (a2 - b2) === Array(0, 0, 0, 0).asRow
+      (a2 * b2) === Array(1, 4, 9, 16).asRow
     }
     "convert" in {
       val t1 = Array[Int](4, 5).asRow
       t1.toDouble === Array[Double](4, 5).asRow
+    }
+    "boolean tensor operators" in {
+      val a = Array(true, false).asRow
+      val b = Array(true, false, true).asRow
+      val c = Array(true, false, false).asRow
+      !a === Array(false, true).asRow
+      (a && true) === Array(true, false).asRow
+      (a || true) === Array(true, true).asRow
+      (a ^ true) === Array(false, true).asRow
+      (b && c) === Array(true, false, false).asRow
+      (b || c) === Array(true, false, true).asRow
+      (b ^ c) === Array(false, false, true).asRow
     }
   }
 }
