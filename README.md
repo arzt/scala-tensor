@@ -1,6 +1,7 @@
 # tensor4s
 
-##What is it?
+## What is it?
+
 tensor4s expands the scala programming language by multi-dimensional arrays (tensors) and 
 linear algebra operators aiming to bring 
 numerical computation to the scala world using a simple yet powerful syntax.
@@ -11,24 +12,26 @@ With that said tensor4s is comparable but yet different to following existing li
 
 tensor4s aims not be a replacement but yet another linear algebra library 
 with following features:
+
 #### Implemented in Scala
-In my opinion Java syntax is no meant to support linear algebra extensions
-in a non-cumbersome way comparable to python's ndarrays. The situations is different with Scala. 
-Scala's rich syntax allows a seamingless integration of linear algebra support
-using a simple yet powerful syntax known from other languages such as
-python and matlab.
+Plain Java syntax makes it hard to support simple linear algebra expressions 
+comparable to python's nd-arrays. The situations is different with Scala. 
+Scala's rich syntax allows for a seamless integration of operators/expressions
+known from languages such as python and matlab.
+Tensor4s is implemented from scratch in scala, 
+bringing the powerful syntax of existing linear algebra library to the scala world.
  
 #### Backed by plain old arrays
 tensor4's tensors are backed by plain old java arrays.
-This way tensors can be seen as multidimensional containers storing
-elements of arbitrary data types. This mean tensors are not limited to
+Tensors can be seen as multidimensional containers storing
+elements of arbitrary data types. Tensors are therefore not limited to
 primitive data types such as double or float, but may contain any
-data structure, even tensors. 
+data structure, even other tensors. 
 
 **Note**: Currently the status of this library is pre alpha. 
 The code is likely to pass breaking changes in the future.
 Use at your own risk.
-##Build and install:
+## Build and install:
 tenor4s uses [SBT](https://www.scala-sbt.org/) for building the library. Clone this git repository, open shell and publish artifacts locally:
 ```bash
 sbt publishLocal
@@ -40,29 +43,50 @@ libraryDependencies ++= Seq(
 )
 ```
 **Note**: Adding tensor4s to Maven repository is planned for a later stable release.
-##Documentation
-To Generate scala doc run the following command
+## Scaladoc
+To Generate scaladoc documentation run the following command
 ```sbtshell
 sbt doc
 ```
 
-##Syntax
-###Creating tensors
+## Syntax
+### Creating tensors
 ```scala
 //import linear algebra DSL:
+//all following examples expect the presence of this imports
 import com.github.arzt.tensor.TensorImplicits._
 import com.github.arzt.tensor.Tensor
-//all examples expect this import
 
-val shape = Vector(2,3)
+val shape = Vector(2, 3)
 val data = Array[Int](
   0,1,2,
   3,4,5
 )
-//All lines create the same 2 rows by 3 cols tensor
-val tensor0 = Tensor[Int](shape, data)
+//Each line creates the same 2 by 3 matrix
+val tensor0 = Tensor(shape, data)
 val tensor1 = data.asRows(2)
 val tensor2 = data.asCols(3)
-//The type of the vals is com.github.arzt.tensor.Tensor
+val tensor3 = data.asTensor(2, 3)
+//Each tensor has the inferred type Tensor[Int]
 
+//Row/Columns vectors:
+val row: Tensor[Boolean] = Array(true, false, false).asRow
+val col: Tensor[String] = Array("1", "2", "3").asCol
+
+```
+
+### Reading/Updating single elements
+```scala
+import com.github.arzt.tensor.TensorImplicits._
+import com.github.arzt.tensor.Tensor
+
+val t = 
+  Array(
+    1,2,
+    3,4,
+    
+    5,6,
+    7,8
+  )
+  .asTensor(2, 2, 2)
 ```
