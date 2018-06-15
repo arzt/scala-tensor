@@ -2,10 +2,10 @@
 
 ## What is it?
 
-tensor4s expands the scala programming language by multi-dimensional arrays (tensors) and 
-linear algebra operators aiming to bring 
-numerical computation to the scala world using a simple yet powerful syntax.
-With that said tensor4s is comparable but yet different to following existing linear algebra libraries:
+tensor4s aims to simplify numerical computations in scala by providing 
+multi-dimensional arrays (tensors) and 
+linear algebra operators using a simple and powerful syntax.
+Tensor4s is comparable but yet different to following existing linear algebra libraries:
 
 * [ScalaNLP's Breeze](https://github.com/scalanlp/breeze)
 * [ND4J/ND4S](https://nd4j.org/)
@@ -14,10 +14,9 @@ tensor4s aims not be a replacement but yet another linear algebra library
 with following features:
 
 #### Implemented in Scala
-Plain Java syntax makes it hard to support simple linear algebra expressions 
-comparable to python's nd-arrays. The situations is different with Scala. 
-Scala's rich syntax allows for a seamless integration of operators/expressions
-known from languages such as python and matlab.
+Plain Java syntax is not well suited o support simple linear algebra expressions 
+known python's numpy or matlab. The situation is different with Scala. 
+Scala's rich syntax allows for a seamless integration of most know operators/expressions.
 Tensor4s is implemented from scratch in scala, 
 bringing the powerful syntax of existing linear algebra library to the scala world.
  
