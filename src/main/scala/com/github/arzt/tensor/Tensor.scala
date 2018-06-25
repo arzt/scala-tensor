@@ -54,9 +54,9 @@ sealed trait Tensor[T] {
   }
 
   def apply(b: Index, a: Index): Tensor[T] = {
-    val u = b(shape(0))
-    val v = a(shape(1))
-    val mapping = indices(stride, u.toArray, v.toArray)
+    val u = b(shape(0)).toArray
+    val v = a(shape(1)).toArray
+    val mapping = indices(stride, u, v)
     new ViewTensor(Vector(u.size, v.size), this, mapping)
   }
 
