@@ -3,72 +3,25 @@ package com.github.arzt
 package object tensor {
   type Index = Int => Seq[Int]
 
-  def indices(stride: Array[Int], d: Array[Int], c: Array[Int], b: Array[Int], a: Array[Int]): Array[Int] = {
-    val n = d.length * c.length * b.length * a.length
+  def indices(stride: Array[Int], is: Array[Int]*): Array[Int] = {
+    val n = is.view.map(_.length).product
     val output = new Array[Int](n)
-    var id = 0
     var i = 0
-    while (id < d.length) {
-      val jd = stride(0) * d(id)
-      var ic = 0
-      while (ic < c.length) {
-        val jc = jd + stride(1) * c(ic)
-        var ib = 0
-        while (ib < b.length) {
-          val jb = jc + stride(2) * b(ib)
-          var ia = 0
-          while (ia < a.length) {
-            output(i) = jb + a(ia)
-            ia += 1
-            i += 1
-          }
-          ib += 1
-        }
-        ic += 1
-      }
-      id += 1
-    }
-    output
-  }
 
-  def indices(stride: Array[Int], c: Array[Int], b: Array[Int], a: Array[Int]): Array[Int] = {
-    val n = c.length * b.length * a.length
-    val output = new Array[Int](n)
-    var ic = 0
-    var i = 0
-    while (ic < c.length) {
-      val j = stride(0) * c(ic)
-      var ib = 0
-      while (ib < b.length) {
-        val k = j + stride(1) * b(ib)
-        var ia = 0
-        while (ia < a.length) {
-          output(i) = k + a(ia)
-          ia += 1
-          i += 1
-        }
-        ib += 1
-      }
-      ic += 1
-    }
-    output
-  }
-
-  def indices(stride: Array[Int], b: Array[Int], a: Array[Int]): Array[Int] = {
-    val n = b.length * a.length
-    val output = new Array[Int](n)
-    var ib = 0
-    var i = 0
-    while (ib < b.length) {
-      val j = stride(0) * b(ib)
-      var ia = 0
-      while (ia < a.length) {
-        output(i) = a(ia) + j
-        ia += 1
+    def indicesRec(l: Int, m: Int, offset: Int): Unit =
+      if (m == is.length) {
+        output(i) = offset
         i += 1
+      } else {
+        var k = 0
+        while (k < is(m).length) {
+          val newOffset = offset + stride(l) * is(m)(k)
+          indicesRec(l + 1, m + 1, newOffset)
+          k += 1
+        }
       }
-      ib += 1
-    }
+
+    indicesRec(0, 0, 0)
     output
   }
 
