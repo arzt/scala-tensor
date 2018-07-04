@@ -116,8 +116,8 @@ class TensorSpec extends Specification {
     }
     "update with tensor 3D" in {
       val a = Array(1, 0,
-        0, 4,
-        5, 6).asTensor(3, 1, 2)
+                    0, 4,
+                    5, 6).asTensor(3, 1, 2)
       a(1, ::, ::) = Array(4, 6).asTensor(1, 1, 2)
       a === Array(1, 0, 4, 6, 5, 6).asTensor(3, 1, 2)
     }
@@ -236,7 +236,7 @@ class TensorSpec extends Specification {
       val label = Array(0, 1, 0, 2, 3, 3, 2).asRow
       val t =
         Array(0, 1, 0, 1,
-          4, 5, 6, 7)
+              4, 5, 6, 7)
           .asTensor(2, 4)
       val idx = t(0, ::) == 1
       val r = t(1, idx).equals(Array(5, 7).asTensor(2))
@@ -269,12 +269,12 @@ class TensorSpec extends Specification {
     "reverse 2D" in {
       val t =
         Array(1, 2,
-          3, 4)
+              3, 4)
           .asRows(2)
       t(::, -::) ===
         Array(2, 1,
-          4, 3)
-        .asRows(2)
+              4, 3)
+          .asRows(2)
     }
     "revers 3D" in {
       val result =
@@ -307,9 +307,9 @@ class TensorSpec extends Specification {
     "advance indexing" in {
       val t =
         Array(1, 2, 3, 4,
-          5, 6, 7, 8,
-          9, 10, 11, 12,
-          13, 14, 15, 16)
+              5, 6, 7, 8,
+              9, 10, 11, 12,
+              13, 14, 15, 16)
           .asTensor(4, 4)
       val result = t(0, 2 :: -1)
       result === Array(3, 4).asTensor(1, 2)
@@ -329,7 +329,7 @@ class TensorSpec extends Specification {
       val a2 = Array(1, 2, 3, 4).asRow
       val b2 = Array(1, 2, 3, 4).asRow
       (a2 + b2).isView === true
-      ((a2 + b2)(0) = 5) must throwAn[UnsupportedOperationException]
+      ((a2 + b2) (0) = 5) must throwAn[UnsupportedOperationException]
       (a2 + b2) === Array(2, 4, 6, 8).asRow
       (a2 - b2) === Array(0, 0, 0, 0).asRow
       (a2 * b2) === Array(1, 4, 9, 16).asRow
@@ -349,6 +349,47 @@ class TensorSpec extends Specification {
       (b && c) === Array(true, false, false).asRow
       (b || c) === Array(true, false, true).asRow
       (b ^ c) === Array(false, false, true).asRow
+    }
+    "permute dimensions" in {
+      val t = Array(
+        0, 1, 2,
+        3, 4, 5
+      )
+        .asTensor(2, 3)
+      val result0 = t.permute(Seq(0, 1))
+      result0.shape === Seq(2, 3)
+      result0 === t
+
+      val result1 = t.permute(Seq(1, 0))
+      val expected =
+        Array(
+          0, 3,
+          1, 4,
+          2, 5
+        )
+          .asTensor(3, 2)
+      result1.shape === Seq(3, 2)
+      result1 === expected
+    }
+    "permute more than 2 dimensions" in {
+      val tensor =
+        Array(0, 1,
+
+              2, 3,
+
+              4, 5,
+
+
+              6, 7,
+
+              8, 9,
+
+              10, 11)
+          .asTensor(2, 3, 1, 2)
+      val intermediate = tensor.permute(Array(1, 2, 3, 0))
+      val result = intermediate.permute(Array(3, 0, 1, 2))
+      intermediate !== tensor
+      result === tensor
     }
   }
 }

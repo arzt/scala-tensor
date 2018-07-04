@@ -36,4 +36,57 @@ package object tensor {
   def index(stride: Array[Int], d: Int, c: Int, b: Int, a: Int): Int = {
     d * stride(0) + c * stride(1) + b * stride(2) + a
   }
+
+  private[tensor] def index(stride: Array[Int]): (Int => Int) => Int =
+    is => {
+      val hui = stride.indices.map(is).toArray
+      var i = 0
+      var out: Int = 0
+      while (i < stride.length) {
+        val isi = is(i)
+        out += isi * stride(i)
+        i += 1
+      }
+      out
+    }
+
+  private[tensor] def unindex(stride: Array[Int]): Int => Int => Int = {
+    val output = new Array[Int](stride.length)
+
+    def unindexRec(i: Int, rest: Int): Int =
+      if (i < stride.length) {
+        val nextRest = rest % stride(i)
+        output(i) = rest / stride(i)
+        unindexRec(i + 1, nextRest)
+      } else {
+        rest
+      }
+
+    in => {
+      unindexRec(0, in)
+      output
+    }
+  }
+
+  private[tensor] def toStride(dim: Array[Int]): Array[Int] = dim.scanRight(1)(_ * _).tail
+
+  private[tensor] def invert(size: Int, fun: Int => Int): Int => Int = {
+    val inverse = new Array[Int](size)
+    inverse.indices.foreach { i =>
+      inverse(fun(i)) = i
+    }
+    inverse
+  }
+
+  private[tensor] def permuteMapping(
+    pi: Int => Int,
+    fromStride: Array[Int],
+    newShape: Seq[Int]
+  ): Int => Int = {
+    val newStride = toStride(newShape.toArray)
+    val unind = unindex(newStride)
+    val ind = index(fromStride)
+    val invPi = invert(fromStride.length, pi)
+    unind andThen (invPi andThen _) andThen ind
+  }
 }

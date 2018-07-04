@@ -15,12 +15,7 @@ sealed trait Tensor[T] {
 
   val length: Int = shape.product
 
-  private val stride: Array[Int] = shape
-    .scanRight(1) { (right, size) =>
-      right * size
-    }
-    .tail
-    .toArray
+  private val stride: Array[Int] = toStride(shape.toArray)
 
   lazy val rows: Int = shape(rank - 2)
 
@@ -137,6 +132,13 @@ sealed trait Tensor[T] {
       case _ => false
     }
   }
+
+  def permute(pi: Int => Int): Tensor[T] = {
+    val newShape = shape.indices.map(pi andThen shape)
+    val mapping = permuteMapping(pi, stride, newShape)
+    new ViewTensor[T](newShape, this, mapping)
+  }
+
 }
 
 object Tensor {
