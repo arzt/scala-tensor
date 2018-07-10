@@ -391,5 +391,25 @@ class TensorSpec extends Specification {
       intermediate !== tensor
       result === tensor
     }
+    "transpose" in {
+      val tensor =
+        Array(0, 1,
+              2, 3,
+              4, 5,
+
+              0, 1,
+              2, 3,
+              4, 5)
+          .asTensor(2, 3, 2)
+      val expected =
+        Array(0, 2, 4,
+              1, 3, 5,
+
+              0, 2, 4,
+              1, 3, 5)
+          .asTensor(2, 2, 3)
+      tensor.t === expected
+      tensor.t.t === tensor
+    }
   }
 }
