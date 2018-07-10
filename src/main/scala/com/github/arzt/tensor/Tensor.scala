@@ -139,6 +139,20 @@ sealed trait Tensor[T] {
     new ViewTensor[T](newShape, this, mapping)
   }
 
+  def t: Tensor[T] = this match {
+    case x: TransposeTensor[T] =>
+      x.tensor
+    case _ => {
+      val n = shape.length - 1
+      val pi = shape.indices.toArray
+      val tmp = pi(n)
+      pi(n) = pi(n - 1)
+      pi(n - 1) = tmp
+      val newShape = shape.indices.map(pi andThen shape)
+      val mapping = permuteMapping(pi, stride, newShape)
+      new TransposeTensor[T](newShape, this, mapping)
+    }
+  }
 }
 
 object Tensor {
@@ -210,7 +224,7 @@ private class MapTensor[T, R](tensor: Tensor[T], f: T => R) extends Tensor[R] {
     throw new UnsupportedOperationException("Update not supported on mapped tensor view, call apply first")
 }
 
-private class ViewTensor[T](val shape: immutable.Seq[Int], tensor: Tensor[T], map: Int => Int) extends Tensor[T] {
+private class ViewTensor[T](val shape: immutable.Seq[Int], val tensor: Tensor[T], map: Int => Int) extends Tensor[T] {
 
   override def apply(i: Int): T = tensor(map(i))
 
@@ -221,3 +235,6 @@ private class ViewTensor[T](val shape: immutable.Seq[Int], tensor: Tensor[T], ma
   override def isView: Boolean = true
 
 }
+
+private class TransposeTensor[T](shape: immutable.Seq[Int], tensor: Tensor[T], map: Int => Int)
+  extends ViewTensor[T](shape, tensor, map)
