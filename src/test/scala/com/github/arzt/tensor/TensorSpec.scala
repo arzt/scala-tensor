@@ -3,6 +3,8 @@ package com.github.arzt.tensor
 import com.github.arzt.tensor.TensorImplicits._
 import org.specs2.mutable.Specification
 
+import scala.util.Random
+
 class TensorSpec extends Specification {
   "Tensors" should {
     "read elements by index" in {
@@ -410,6 +412,112 @@ class TensorSpec extends Specification {
           .asTensor(2, 2, 3)
       tensor.t === expected
       tensor.t.t === tensor
+    }
+    "mmul" in {
+      val a =
+        Array[Double](3, 2, 1)
+          .asRows(1)
+      val b =
+        Array[Double](1,
+                      2,
+                      9)
+          .asRows(3)
+      val c = a ** b
+      val d = b ** a
+      val expected =
+        Array[Double](16)
+          .asRows(1)
+      val expectod2 =
+        Array[Double](3, 2, 1,
+                      6, 4, 2,
+                      27, 18, 9)
+          .asRows(3)
+      c === expected
+      d.shape === collection.immutable.Seq(3, 3)
+    }
+    "mmul2" in {
+      val a =
+        Array[Double](1, 2,
+                      3, 4,
+                      5, 6)
+          .asRows(3)
+      val b =
+        Array[Double](1, 2, 3,
+                      4, 5, 6)
+          .asRows(2)
+      val c = a ** b
+      val d = b ** a
+      val expetced2 =
+        Array[Double](22, 28,
+                      49, 64)
+          .asRows(2)
+      val expected =
+        Array[Double](9, 12, 15,
+                      19, 26, 33,
+                      29, 40, 51)
+          .asRows(3)
+      c === expected
+      d === expetced2
+    }
+    "mmul big matrix" in {
+      val M = 300
+      val K = 300
+      val N = 300
+      val r = new Random()
+      val A = Array.fill(M * K)(r.nextDouble()).asRows(M)
+      val B = Array.fill(K * N)(r.nextDouble()).asRows(K)
+      val C = A ** B
+      C.shape === Vector(M, N)
+    }
+    "mmul multi-dimensional" in {
+      val A =
+        Array[Double](1, 2, 3,
+                      4, 5, 6,
+                      7, 8, 9)
+          .asTensor(3, 1, 3)
+      val B =
+        Array[Double](3, 2, 1,
+                      6, 5, 4,
+                      9, 8, 7)
+          .asTensor(3, 3, 1)
+      val C = A ** B
+      val expected =
+        Array[Double](10, 73, 190)
+          .asTensor(3, 1, 1)
+      C.shape === Vector(3, 1, 1)
+      C === expected
+    }
+    "mmul transposed" in {
+      val a =
+        Array[Double](1, 2,
+                      4, 5)
+          .asRows(2)
+      val b =
+        Array[Double](1, 0,
+                      0, 1)
+          .asRows(2)
+      val c = a.t ** b
+      val expected =
+        Array[Double](1, 4,
+                      2, 5)
+          .asRows(2)
+      expected === c
+    }
+    "single percision mmul" in {
+      val a =
+        Array[Float](1, 2,
+                     4, 5)
+          .asRows(2)
+      val b =
+        Array[Float](1, 0,
+                     0, 1)
+          .asRows(2)
+      val c = a.t ** b
+      val expected =
+        Array[Float](1, 4,
+                     2, 5)
+          .asRows(2)
+      expected === c
     }
   }
 }

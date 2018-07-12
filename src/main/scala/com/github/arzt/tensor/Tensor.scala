@@ -113,7 +113,9 @@ sealed trait Tensor[T] {
       .reduce(_ ++ _)
     new String(tap)
     * */
-    map(_.toString)().toSeq.mkString("[", ",", "]")
+    val shapeStr = shape.mkString("[", " ", "]")
+    val valuesStr = toSeq.take(20).mkString("[", " ", "]")
+    s"Tensor(n=$length, shape=$shapeStr, values=$valuesStr)"
   }
 
   def combine[B, R](that: Tensor[B], f: (T, B) => R): Tensor[R] = new CombineTensor[R, T, B](this, that, f)
@@ -178,7 +180,8 @@ object Tensor {
 
 private class ArrayTensor[T] private[tensor] (
     val shape: immutable.Seq[Int],
-    data: Array[T], offset: Int = 0) extends Tensor[T] {
+    val data: Array[T],
+    val offset: Int = 0) extends Tensor[T] {
 
   override def apply(a: Int): T = data(offset + a)
 
@@ -208,11 +211,6 @@ private class CombineTensor[T, A, B](ta: Tensor[A], tb: Tensor[B], f: (A, B) => 
 
 private class MapTensor[T, R](tensor: Tensor[T], f: T => R) extends Tensor[R] {
   override def shape: immutable.Seq[Int] = tensor.shape
-
-  override def apply()(implicit tag: ClassTag[R]): Tensor[R] = {
-    val data = toSeq.toArray
-    new ArrayTensor[R](shape, data, 0)
-  }
 
   override def apply(a: Int): R = f(tensor(a))
 

@@ -81,8 +81,7 @@ package object tensor {
   private[tensor] def permuteMapping(
     pi: Int => Int,
     fromStride: Array[Int],
-    newShape: Seq[Int]
-  ): Int => Int = {
+    newShape: Seq[Int]): Int => Int = {
     val newStride = toStride(newShape.toArray)
     val unind = unindex(newStride)
     val ind = index(fromStride)
