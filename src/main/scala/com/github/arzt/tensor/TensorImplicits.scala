@@ -1,7 +1,7 @@
 package com.github.arzt.tensor
 
-import org.jblas.NativeBlas.dgemm
-import org.jblas.NativeBlas.sgemm
+import com.github.arzt.tensor.op.DoubleTensorMultiplication
+import com.github.arzt.tensor.op.FloatTensorMultiplication
 
 import scala.language.implicitConversions
 import scala.languageFeature.implicitConversions
@@ -9,7 +9,7 @@ import scala.reflect.ClassTag
 
 object TensorImplicits {
 
-  case class WithOffset[T: ClassTag] private (data: Array[T], offset: Int) {
+  case class WithOffset[T: ClassTag] private(data: Array[T], offset: Int) {
     def asTensor(dim: Int*): Tensor[T] =
       Tensor[T](dim.toVector, data, offset)
   }
@@ -45,26 +45,6 @@ object TensorImplicits {
     def ^(that: Tensor[Boolean]): Tensor[Boolean] = tensor.combine[Boolean, Boolean](that, _ ^ _)
   }
 
-  private def getData[T: ClassTag](t: Tensor[T]): Array[T] =
-    t match {
-      case array: ArrayTensor[T] =>
-        array.data
-      case transpose: TransposeTensor[T] =>
-        transpose.tensor match {
-          case array2: ArrayTensor[T] =>
-            array2.data
-          case _ =>
-            transpose
-              .tensor()
-              .asInstanceOf[ArrayTensor[T]]
-              .data
-        }
-      case _ =>
-        t()
-          .asInstanceOf[ArrayTensor[T]]
-          .data
-    }
-
   def getOp[T](t: Tensor[T]): Char =
     if (t.isInstanceOf[TransposeTensor[T]]) 't' else 'n'
 
@@ -83,87 +63,8 @@ object TensorImplicits {
         0
     }
 
-  def dgemmT(a: Tensor[Double], b: Tensor[Double], c: ArrayTensor[Double]): Unit = {
-    val n = a.shape.length
-    require(n == b.shape.length)
-    require(a.shape(n - 1) == b.shape(n - 2))
-    val AA = getData(a)
-    val BB = getData(b)
-    val opA = getOp(a)
-    val opB = getOp(b)
-    val num = a.shape.take(n - 2).product
-    val C = getData(c)
-    val M = a.shape(n - 2)
-    val N = b.shape.last
-    val K = a.shape.last
-    val ALPHA = 1
-    val BETA = 0
-    var AO = getOffset(a)
-    var BO = getOffset(b)
-    var CO = c.offset
-    var i = 0
-    while (i < num) {
-      dgemm(opB, opA, M, N, K, ALPHA, BB, BO, N, AA, AO, K, BETA, C, CO, N)
-      AO += M * K
-      BO += K * N
-      CO += M * N
-      i += 1
-    }
-  }
 
-  def sgemmT(a: Tensor[Float], b: Tensor[Float], c: ArrayTensor[Float]): Unit = {
-    val n = a.shape.length
-    require(n == b.shape.length)
-    require(a.shape(n - 1) == b.shape(n - 2))
-    val AA = getData(a)
-    val BB = getData(b)
-    val opA = getOp(a)
-    val opB = getOp(b)
-    val num = a.shape.take(n - 2).product
-    val C = getData(c)
-    val M = a.shape(n - 2)
-    val N = b.shape.last
-    val K = a.shape.last
-    val ALPHA = 1
-    val BETA = 0
-    var AO = getOffset(a)
-    var BO = getOffset(b)
-    var CO = c.offset
-    var i = 0
-    while (i < num) {
-      sgemm(opB, opA, M, N, K, ALPHA, BB, BO, N, AA, AO, K, BETA, C, CO, N)
-      AO += M * K
-      BO += K * N
-      CO += M * N
-      i += 1
-    }
-  }
-
-  implicit class MatrixMultiplicationDoubleOps(a: Tensor[Double]) {
-
-    def **(b: Tensor[Double]): Tensor[Double] = {
-      val n = a.shape.length
-      val outShape = a.shape.updated(n - 1, b.shape.last)
-      val C = new Array[Double](outShape.product)
-      val c = new ArrayTensor[Double](outShape, C, 0)
-      dgemmT(a, b, c)
-      c
-    }
-  }
-
-  implicit class MatrixMultiplicationFloatOps(a: Tensor[Float]) {
-
-    def **(b: Tensor[Float]): Tensor[Float] = {
-      val n = a.shape.length
-      val outShape = a.shape.updated(n - 1, b.shape.last)
-      val C = new Array[Float](outShape.product)
-      val c = new ArrayTensor[Float](outShape, C, 0)
-      sgemmT(a, b, c)
-      c
-    }
-  }
-
-  implicit class NumericTensorOps[T](tensor: Tensor[T])(implicit num: Numeric[T]) {
+  implicit class NumericTensorOps[T: ClassTag](tensor: Tensor[T])(implicit num: Numeric[T]) {
 
     def +(a: T): Tensor[T] = tensor.map(num.plus(_, a))
 
@@ -215,5 +116,9 @@ object TensorImplicits {
   implicit class TrippleOps(t: (Int, Int, Int)) {
     def ::(a: Int): (Int, Int, Int) = (a, t._1, t._2)
   }
+
+  implicit val dtM = DoubleTensorMultiplication
+
+  implicit val ftM = FloatTensorMultiplication
 
 }
