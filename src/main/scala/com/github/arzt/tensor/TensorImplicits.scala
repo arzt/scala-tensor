@@ -1,10 +1,11 @@
 package com.github.arzt.tensor
 
-import scala.reflect.ClassTag
-
-import scala.languageFeature.implicitConversions
+import com.github.arzt.tensor.op.DoubleTensorMultiplication
+import com.github.arzt.tensor.op.FloatTensorMultiplication
 
 import scala.language.implicitConversions
+import scala.languageFeature.implicitConversions
+import scala.reflect.ClassTag
 
 object TensorImplicits {
 
@@ -44,7 +45,25 @@ object TensorImplicits {
     def ^(that: Tensor[Boolean]): Tensor[Boolean] = tensor.combine[Boolean, Boolean](that, _ ^ _)
   }
 
-  implicit class NumericTensorOps[T](tensor: Tensor[T])(implicit num: Numeric[T]) {
+  def getOp[T](t: Tensor[T]): Char =
+    if (t.isInstanceOf[TransposeTensor[T]]) 't' else 'n'
+
+  def getOffset[T](t: Tensor[T]): Int =
+    t match {
+      case array: ArrayTensor[T] =>
+        array.offset
+      case transpose: TransposeTensor[T] =>
+        transpose.tensor match {
+          case array2: ArrayTensor[T] =>
+            array2.offset
+          case _ =>
+            0
+        }
+      case _ =>
+        0
+    }
+
+  implicit class NumericTensorOps[T: ClassTag](tensor: Tensor[T])(implicit num: Numeric[T]) {
 
     def +(a: T): Tensor[T] = tensor.map(num.plus(_, a))
 
@@ -96,4 +115,9 @@ object TensorImplicits {
   implicit class TrippleOps(t: (Int, Int, Int)) {
     def ::(a: Int): (Int, Int, Int) = (a, t._1, t._2)
   }
+
+  implicit val dtM = DoubleTensorMultiplication
+
+  implicit val ftM = FloatTensorMultiplication
+
 }

@@ -1,9 +1,13 @@
 package com.github.arzt.tensor
 
+import com.github.arzt.tensor.op.TensorMultiplication
+
 import scala.collection.immutable
 import scala.reflect.ClassTag
 
 sealed trait Tensor[T] {
+
+  implicit val tag: ClassTag[T]
 
   def toDouble(implicit n: Numeric[T]): Tensor[Double] = this.map(x => n.toDouble(x))
 
@@ -113,18 +117,29 @@ sealed trait Tensor[T] {
       .reduce(_ ++ _)
     new String(tap)
     * */
-    map(_.toString)().toSeq.mkString("[", ",", "]")
+    val shapeStr = shape.mkString("[", " ", "]")
+    val valuesStr = toSeq.take(20).mkString("[", " ", "]")
+    s"Tensor(n=$length, shape=$shapeStr, values=$valuesStr)"
   }
 
-  def combine[B, R](that: Tensor[B], f: (T, B) => R): Tensor[R] = new CombineTensor[R, T, B](this, that, f)
+  def combine[B, R: ClassTag](that: Tensor[B], f: (T, B) => R): Tensor[R] = new CombineTensor[R, T, B](this, that, f)
 
-  def map[R](f: T => R): Tensor[R] = new MapTensor[T, R](this, f)
+  def map[R: ClassTag](f: T => R): Tensor[R] = new MapTensor[T, R](this, f)
 
   def ==(a: T): Tensor[Boolean] = this.map(_ == a)
 
   def !=(a: T): Tensor[Boolean] = this.map(_ != a)
 
   def toSeq: Seq[T]
+
+  def **(b: Tensor[T])(implicit m: TensorMultiplication[T]): Tensor[T] = {
+    val n = this.shape.length
+    val outShape = this.shape.updated(n - 1, b.shape.last)
+    val C = new Array[T](outShape.product)
+    val c = new ArrayTensor[T](outShape, C, 0)
+    m.apply(this, b, c)
+    c
+  }
 
   override def equals(obj: scala.Any): Boolean = {
     obj match {
@@ -153,6 +168,26 @@ sealed trait Tensor[T] {
       new TransposeTensor[T](newShape, this, mapping)
     }
   }
+
+  private[tensor] def getData(implicit tag: ClassTag[T]): Array[T] =
+    this match {
+      case array: ArrayTensor[T] =>
+        array.data
+      case transpose: TransposeTensor[T] =>
+        transpose.tensor match {
+          case array2: ArrayTensor[T] =>
+            array2.data
+          case _ =>
+            transpose
+              .tensor()
+              .asInstanceOf[ArrayTensor[T]]
+              .data
+        }
+      case _ =>
+        this()
+          .asInstanceOf[ArrayTensor[T]]
+          .data
+    }
 }
 
 object Tensor {
@@ -178,7 +213,10 @@ object Tensor {
 
 private class ArrayTensor[T] private[tensor] (
     val shape: immutable.Seq[Int],
-    data: Array[T], offset: Int = 0) extends Tensor[T] {
+    val data: Array[T],
+    val offset: Int = 0)(implicit val tag: ClassTag[T]) extends Tensor[T] {
+
+  //override val tag = tago
 
   override def apply(a: Int): T = data(offset + a)
 
@@ -191,7 +229,7 @@ private class ArrayTensor[T] private[tensor] (
   override def isView = false
 }
 
-private class CombineTensor[T, A, B](ta: Tensor[A], tb: Tensor[B], f: (A, B) => T) extends Tensor[T] {
+private class CombineTensor[T, A, B](ta: Tensor[A], tb: Tensor[B], f: (A, B) => T)(implicit val tag: ClassTag[T]) extends Tensor[T] {
   require(ta.shape == tb.shape)
 
   override def shape: immutable.Seq[Int] = ta.shape
@@ -206,13 +244,8 @@ private class CombineTensor[T, A, B](ta: Tensor[A], tb: Tensor[B], f: (A, B) => 
     throw new UnsupportedOperationException("Update not supported on combined tensor view, call apply first")
 }
 
-private class MapTensor[T, R](tensor: Tensor[T], f: T => R) extends Tensor[R] {
+private class MapTensor[T, R](tensor: Tensor[T], f: T => R)(implicit val tag: ClassTag[R]) extends Tensor[R] {
   override def shape: immutable.Seq[Int] = tensor.shape
-
-  override def apply()(implicit tag: ClassTag[R]): Tensor[R] = {
-    val data = toSeq.toArray
-    new ArrayTensor[R](shape, data, 0)
-  }
 
   override def apply(a: Int): R = f(tensor(a))
 
@@ -224,7 +257,7 @@ private class MapTensor[T, R](tensor: Tensor[T], f: T => R) extends Tensor[R] {
     throw new UnsupportedOperationException("Update not supported on mapped tensor view, call apply first")
 }
 
-private class ViewTensor[T](val shape: immutable.Seq[Int], val tensor: Tensor[T], map: Int => Int) extends Tensor[T] {
+private class ViewTensor[T](val shape: immutable.Seq[Int], val tensor: Tensor[T], map: Int => Int)(implicit val tag: ClassTag[T]) extends Tensor[T] {
 
   override def apply(i: Int): T = tensor(map(i))
 
@@ -236,5 +269,5 @@ private class ViewTensor[T](val shape: immutable.Seq[Int], val tensor: Tensor[T]
 
 }
 
-private class TransposeTensor[T](shape: immutable.Seq[Int], tensor: Tensor[T], map: Int => Int)
+private class TransposeTensor[T](shape: immutable.Seq[Int], tensor: Tensor[T], map: Int => Int)(override implicit val tag: ClassTag[T])
   extends ViewTensor[T](shape, tensor, map)
