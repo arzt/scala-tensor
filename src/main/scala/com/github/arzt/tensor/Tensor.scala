@@ -137,7 +137,7 @@ sealed trait Tensor[T] {
     val outShape = this.shape.updated(n - 1, b.shape.last)
     val C = new Array[T](outShape.product)
     val c = new ArrayTensor[T](outShape, C, 0)
-    m.apply(this,b,c)
+    m.apply(this, b, c)
     c
   }
 

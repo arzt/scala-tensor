@@ -118,8 +118,8 @@ class TensorSpec extends Specification {
     }
     "update with tensor 3D" in {
       val a = Array(1, 0,
-                    0, 4,
-                    5, 6).asTensor(3, 1, 2)
+        0, 4,
+        5, 6).asTensor(3, 1, 2)
       a(1, ::, ::) = Array(4, 6).asTensor(1, 1, 2)
       a === Array(1, 0, 4, 6, 5, 6).asTensor(3, 1, 2)
     }
@@ -238,7 +238,7 @@ class TensorSpec extends Specification {
       val label = Array(0, 1, 0, 2, 3, 3, 2).asRow
       val t =
         Array(0, 1, 0, 1,
-              4, 5, 6, 7)
+          4, 5, 6, 7)
           .asTensor(2, 4)
       val idx = t(0, ::) == 1
       val r = t(1, idx).equals(Array(5, 7).asTensor(2))
@@ -271,12 +271,12 @@ class TensorSpec extends Specification {
     "reverse 2D" in {
       val t =
         Array(1, 2,
-              3, 4)
+          3, 4)
           .asRows(2)
       t(::, -::) ===
         Array(2, 1,
-              4, 3)
-          .asRows(2)
+          4, 3)
+        .asRows(2)
     }
     "revers 3D" in {
       val result =
@@ -309,9 +309,9 @@ class TensorSpec extends Specification {
     "advance indexing" in {
       val t =
         Array(1, 2, 3, 4,
-              5, 6, 7, 8,
-              9, 10, 11, 12,
-              13, 14, 15, 16)
+          5, 6, 7, 8,
+          9, 10, 11, 12,
+          13, 14, 15, 16)
           .asTensor(4, 4)
       val result = t(0, 2 :: -1)
       result === Array(3, 4).asTensor(1, 2)
@@ -331,7 +331,7 @@ class TensorSpec extends Specification {
       val a2 = Array(1, 2, 3, 4).asRow
       val b2 = Array(1, 2, 3, 4).asRow
       (a2 + b2).isView === true
-      ((a2 + b2) (0) = 5) must throwAn[UnsupportedOperationException]
+      ((a2 + b2)(0) = 5) must throwAn[UnsupportedOperationException]
       (a2 + b2) === Array(2, 4, 6, 8).asRow
       (a2 - b2) === Array(0, 0, 0, 0).asRow
       (a2 * b2) === Array(1, 4, 9, 16).asRow
@@ -355,8 +355,7 @@ class TensorSpec extends Specification {
     "permute dimensions" in {
       val t = Array(
         0, 1, 2,
-        3, 4, 5
-      )
+        3, 4, 5)
         .asTensor(2, 3)
       val result0 = t.permute(Seq(0, 1))
       result0.shape === Seq(2, 3)
@@ -367,8 +366,7 @@ class TensorSpec extends Specification {
         Array(
           0, 3,
           1, 4,
-          2, 5
-        )
+          2, 5)
           .asTensor(3, 2)
       result1.shape === Seq(3, 2)
       result1 === expected
@@ -377,16 +375,15 @@ class TensorSpec extends Specification {
       val tensor =
         Array(0, 1,
 
-              2, 3,
+          2, 3,
 
-              4, 5,
+          4, 5,
 
+          6, 7,
 
-              6, 7,
+          8, 9,
 
-              8, 9,
-
-              10, 11)
+          10, 11)
           .asTensor(2, 3, 1, 2)
       val intermediate = tensor.permute(Array(1, 2, 3, 0))
       val result = intermediate.permute(Array(3, 0, 1, 2))
@@ -396,19 +393,19 @@ class TensorSpec extends Specification {
     "transpose" in {
       val tensor =
         Array(0, 1,
-              2, 3,
-              4, 5,
+          2, 3,
+          4, 5,
 
-              0, 1,
-              2, 3,
-              4, 5)
+          0, 1,
+          2, 3,
+          4, 5)
           .asTensor(2, 3, 2)
       val expected =
         Array(0, 2, 4,
-              1, 3, 5,
+          1, 3, 5,
 
-              0, 2, 4,
-              1, 3, 5)
+          0, 2, 4,
+          1, 3, 5)
           .asTensor(2, 2, 3)
       tensor.t === expected
       tensor.t.t === tensor
@@ -418,9 +415,10 @@ class TensorSpec extends Specification {
         Array[Double](3, 2, 1)
           .asRows(1)
       val b =
-        Array[Double](1,
-                      2,
-                      9)
+        Array[Double](
+          1,
+          2,
+          9)
           .asRows(3)
       val c = a ** b
       val d = b ** a
@@ -429,8 +427,8 @@ class TensorSpec extends Specification {
           .asRows(1)
       val expectod2 =
         Array[Double](3, 2, 1,
-                      6, 4, 2,
-                      27, 18, 9)
+          6, 4, 2,
+          27, 18, 9)
           .asRows(3)
       c === expected
       d.shape === collection.immutable.Seq(3, 3)
@@ -438,23 +436,23 @@ class TensorSpec extends Specification {
     "mmul2" in {
       val a =
         Array[Double](1, 2,
-                      3, 4,
-                      5, 6)
+          3, 4,
+          5, 6)
           .asRows(3)
       val b =
         Array[Double](1, 2, 3,
-                      4, 5, 6)
+          4, 5, 6)
           .asRows(2)
       val c = a ** b
       val d = b ** a
       val expetced2 =
         Array[Double](22, 28,
-                      49, 64)
+          49, 64)
           .asRows(2)
       val expected =
         Array[Double](9, 12, 15,
-                      19, 26, 33,
-                      29, 40, 51)
+          19, 26, 33,
+          29, 40, 51)
           .asRows(3)
       c === expected
       d === expetced2
@@ -472,13 +470,13 @@ class TensorSpec extends Specification {
     "mmul multi-dimensional" in {
       val A =
         Array[Double](1, 2, 3,
-                      4, 5, 6,
-                      7, 8, 9)
+          4, 5, 6,
+          7, 8, 9)
           .asTensor(3, 1, 3)
       val B =
         Array[Double](3, 2, 1,
-                      6, 5, 4,
-                      9, 8, 7)
+          6, 5, 4,
+          9, 8, 7)
           .asTensor(3, 3, 1)
       val C = A ** B
       val expected =
@@ -490,32 +488,32 @@ class TensorSpec extends Specification {
     "mmul transposed" in {
       val a =
         Array[Double](1, 2,
-                      4, 5)
+          4, 5)
           .asRows(2)
       val b =
         Array[Double](1, 0,
-                      0, 1)
+          0, 1)
           .asRows(2)
       val c = a.t ** b
       val expected =
         Array[Double](1, 4,
-                      2, 5)
+          2, 5)
           .asRows(2)
       expected === c
     }
     "single percision mmul" in {
       val a =
         Array[Float](1, 2,
-                     4, 5)
+          4, 5)
           .asRows(2)
       val b =
         Array[Float](1, 0,
-                     0, 1)
+          0, 1)
           .asRows(2)
       val c = a.t ** b
       val expected =
         Array[Float](1, 4,
-                     2, 5)
+          2, 5)
           .asRows(2)
       expected === c
     }

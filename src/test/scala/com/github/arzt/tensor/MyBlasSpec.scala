@@ -23,15 +23,15 @@ class MyBlasSpec extends Specification {
       val c = new Array[Double](m * n)
       val co = 0
 
-       val at = a.asTensor(2,3)
-      val bt = b.asTensor(3,2)
+      val at = a.asTensor(2, 3)
+      val bt = b.asTensor(3, 2)
 
       val ct = at ** bt
 
       val dt = (at ** bt)(JavaDoubleTensorMultiplication)
 
       MyBLAS.dgemmJava('n', 'n', m, n, k, a, ao, b, bo, c, co)
-      val c2t = c.asTensor(2,2)
+      val c2t = c.asTensor(2, 2)
       ct === c2t
     }
   }

@@ -9,7 +9,7 @@ import scala.reflect.ClassTag
 
 object TensorImplicits {
 
-  case class WithOffset[T: ClassTag] private(data: Array[T], offset: Int) {
+  case class WithOffset[T: ClassTag] private (data: Array[T], offset: Int) {
     def asTensor(dim: Int*): Tensor[T] =
       Tensor[T](dim.toVector, data, offset)
   }
@@ -62,7 +62,6 @@ object TensorImplicits {
       case _ =>
         0
     }
-
 
   implicit class NumericTensorOps[T: ClassTag](tensor: Tensor[T])(implicit num: Numeric[T]) {
 
