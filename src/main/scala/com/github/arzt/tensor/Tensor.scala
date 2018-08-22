@@ -188,6 +188,15 @@ sealed trait Tensor[T] {
           .asInstanceOf[ArrayTensor[T]]
           .data
     }
+
+  def reshape(newShape: Seq[Int]): Tensor[T] = {
+    require(this.length == newShape.product, "Reshaping with incompatible shapes.")
+    new ReshapeTensor[T](newShape.toVector, this)
+  }
+
+  def asRow(): Tensor[T] = reshape(Seq(1, this.length))
+
+  def asCol(): Tensor[T] = reshape(Seq(this.length, 1))
 }
 
 object Tensor {
@@ -263,7 +272,7 @@ private class ViewTensor[T](val shape: immutable.Seq[Int], val tensor: Tensor[T]
 
   override def update(i: Int, v: T): Unit = tensor.update(map(i), v)
 
-  override def toSeq: collection.Seq[T] = (0 until length).view.map(apply)
+  override def toSeq: Seq[T] = (0 until length).view.map(apply)
 
   override def isView: Boolean = true
 
@@ -271,3 +280,13 @@ private class ViewTensor[T](val shape: immutable.Seq[Int], val tensor: Tensor[T]
 
 private class TransposeTensor[T](shape: immutable.Seq[Int], tensor: Tensor[T], map: Int => Int)(override implicit val tag: ClassTag[T])
   extends ViewTensor[T](shape, tensor, map)
+
+private class ReshapeTensor[T](val shape: immutable.Seq[Int], val tensor: Tensor[T])(implicit val tag: ClassTag[T]) extends Tensor[T] {
+  override def isView: Boolean = true
+
+  override def apply(i: Int): T = tensor(i)
+
+  override def update(i: Int, v: T): Unit = tensor(i) = v
+
+  override def toSeq: Seq[T] = (0 until length).view.map(apply)
+}

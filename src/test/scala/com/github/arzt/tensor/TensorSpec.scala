@@ -4,6 +4,7 @@ import com.github.arzt.tensor.TensorImplicits._
 import org.specs2.mutable.Specification
 
 import scala.util.Random
+import scala.util.Try
 
 class TensorSpec extends Specification {
   "Tensors" should {
@@ -516,6 +517,18 @@ class TensorSpec extends Specification {
           2, 5)
           .asRows(2)
       expected === c
+    }
+    "reshape" in {
+      val data = Array(1, 2)
+      val x = data.asRow
+      val in = x.reshape(Array(2, 1))
+      in === Array(1, 2).asCol
+      Try(x.reshape(Seq(5))) must beFailedTry
+      x.asCol() === Array(1, 2).asCol
+      x.asCol().asRow === Array(1, 2).asRow
+      in.isView === true
+      in(0) = 5
+      in(0) === 5
     }
   }
 }
