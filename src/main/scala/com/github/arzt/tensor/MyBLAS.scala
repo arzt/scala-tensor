@@ -22,10 +22,10 @@ private[tensor] object MyBLAS {
         val ci = co + i * m + j
         var l = 0
         while (l < k) {
-          val il  = i * k + l + ao
+          val il = i * k + l + ao
           val ilt = l * m + i + ao
           val lj = l * n + j + bo
-          val ail = if (aOp == 't) a(ilt) else a(il)
+          val ail = if (aOp == 't') a(ilt) else a(il)
           c(ci) += ail * b(lj)
           l += 1
         }
