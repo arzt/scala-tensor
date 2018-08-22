@@ -502,7 +502,7 @@ class TensorSpec extends Specification {
           .asRows(2)
       expected === c
     }
-    "single percision mmul" in {
+    "single precision mmul" in {
       val a =
         Array[Float](1, 2,
           4, 5)
@@ -536,6 +536,10 @@ class TensorSpec extends Specification {
       )
         .asTensor(1,3,1)
       t.dropSingular(2).shape === Seq(1, 3)
+    }
+    "add singualr dimension" in {
+      val t = Array(1,2,3,4).asCols(2).addSingular(1)
+      t.shape === Seq(2, 1, 2)
     }
   }
 }

@@ -199,8 +199,21 @@ sealed trait Tensor[T] {
   def asCol(): Tensor[T] = reshape(Seq(this.length, 1))
 
   def dropSingular(dim: Int): Tensor[T] = {
-    require(this.shape(dim) == 1, "dimension at index $dim must be equal 1")
+    require(shape(dim) == 1, "dimension at index $dim must be equal 1")
+    val newShape = shape
+      .indices
+      .view
+      .filter(_ != dim)
+      .map(shape)
+      .toIndexedSeq
+    new ReshapeTensor[T](newShape, this)
+  }
 
+  def addSingular(dim: Int): Tensor[T] = {
+    val before = shape.view.slice(0, dim)
+    val after = shape.view.slice(dim, shape.length)
+    val newShape = (before :+ 1) ++ after
+    new ReshapeTensor[T](newShape.toIndexedSeq, this)
   }
 }
 
@@ -285,3 +298,13 @@ private class ViewTensor[T](val shape: immutable.Seq[Int], val tensor: Tensor[T]
 
 private class TransposeTensor[T](shape: immutable.Seq[Int], tensor: Tensor[T], map: Int => Int)(override implicit val tag: ClassTag[T])
   extends ViewTensor[T](shape, tensor, map)
+
+private class ReshapeTensor[T](val shape: immutable.Seq[Int], val tensor: Tensor[T])(implicit val tag: ClassTag[T]) extends Tensor[T] {
+  override def isView: Boolean = true
+
+  override def apply(i: Int): T = tensor(i)
+
+  override def update(i: Int, v: T): Unit = tensor(i) = v
+
+  override def toSeq: Seq[T] = (0 until length).view.map(apply)
+}
