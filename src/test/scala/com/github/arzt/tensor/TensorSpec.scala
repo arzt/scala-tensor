@@ -530,5 +530,12 @@ class TensorSpec extends Specification {
       in(0) = 5
       in(0) === 5
     }
+    "drop singular dimension" in {
+      val t = Array[Int](
+        1,2,3
+      )
+        .asTensor(1,3,1)
+      t.dropSingular(2).shape === Seq(1, 3)
+    }
   }
 }
