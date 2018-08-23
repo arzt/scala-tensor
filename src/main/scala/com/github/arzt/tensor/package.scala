@@ -50,9 +50,7 @@ package object tensor {
       out
     }
 
-  private[tensor] def unindex(stride: Array[Int]): Int => Int => Int = {
-    val output = new Array[Int](stride.length)
-
+  private[tensor] def unindex(stride: Array[Int], output: Array[Int]): Int => Int => Int = {
     def unindexRec(i: Int, rest: Int): Int =
       if (i < stride.length) {
         val nextRest = rest % stride(i)
@@ -83,7 +81,8 @@ package object tensor {
     fromStride: Array[Int],
     newShape: Seq[Int]): Int => Int = {
     val newStride = toStride(newShape.toArray)
-    val unind = unindex(newStride)
+    val output = new Array[Int](newShape.length)
+    val unind = unindex(newStride, output)
     val ind = index(fromStride)
     val invPi = invert(fromStride.length, pi)
     unind andThen (invPi andThen _) andThen ind

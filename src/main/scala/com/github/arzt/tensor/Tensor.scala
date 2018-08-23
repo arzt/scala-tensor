@@ -19,7 +19,7 @@ sealed trait Tensor[T] {
 
   val length: Int = shape.product
 
-  private val stride: Array[Int] = toStride(shape.toArray)
+  protected val stride: Array[Int] = toStride(shape.toArray)
 
   lazy val rows: Int = shape(rank - 2)
 
@@ -281,7 +281,7 @@ private class MapTensor[T, R](tensor: Tensor[T], f: T => R)(implicit val tag: Cl
   override def isView = true
 
   override def update(a: Int, v: R): Unit =
-    throw new UnsupportedOperationException("Update not supported on mapped tensor view, call apply first")
+    throw new UnsupportedOperationException("Update not supported on mapped tensor view, call apply() first")
 }
 
 private class ViewTensor[T](val shape: immutable.Seq[Int], val tensor: Tensor[T], map: Int => Int)(implicit val tag: ClassTag[T]) extends Tensor[T] {
@@ -307,4 +307,39 @@ private class ReshapeTensor[T](val shape: immutable.Seq[Int], val tensor: Tensor
   override def update(i: Int, v: T): Unit = tensor(i) = v
 
   override def toSeq: Seq[T] = (0 until length).view.map(apply)
+}
+
+private class EchoTensor(val shape: immutable.Seq[Int]) extends Tensor[Int] {
+  override implicit val tag: ClassTag[Int] = implicitly[ClassTag[Int]]
+
+  override def isView: Boolean = false
+
+  override def apply(a: Int): Int = a
+
+  override def update(a: Int, v: Int): Unit =
+    throw new UnsupportedOperationException("Update not supported on IndexTensor, call apply() first")
+
+  override def toSeq: Seq[Int] = 0 until length
+}
+
+private class IndexTensor(val shape: immutable.Seq[Int]) extends Tensor[Seq[Int]] {
+  override implicit val tag: ClassTag[Seq[Int]] = implicitly[ClassTag[Seq[Int]]]
+
+  override def isView: Boolean = false
+
+  private val output = new Array[Int](stride.length)
+
+  override def apply(i: Int): Seq[Int] = {
+    unindex(stride, output)(i)
+    output
+  }
+
+  override def update(a: Int, v: Seq[Int]): Unit =
+    throw new UnsupportedOperationException("Update not supported on IndexTensor, call apply() first")
+
+  override def toSeq: Seq[Seq[Int]] = (0 until length).map(apply)
+}
+
+object IndexTensor {
+  def apply(shape: immutable.Seq[Int]): Tensor[Seq[Int]] = new IndexTensor(shape)
 }
