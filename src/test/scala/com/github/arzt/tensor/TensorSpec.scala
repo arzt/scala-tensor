@@ -4,7 +4,6 @@ import com.github.arzt.tensor.TensorImplicits._
 import org.specs2.mutable.Specification
 
 import scala.util.Random
-import scala.util.Try
 
 class TensorSpec extends Specification {
   "Tensors" should {
@@ -523,7 +522,7 @@ class TensorSpec extends Specification {
       val x = data.asRow
       val in = x.reshape(Array(2, 1))
       in === Array(1, 2).asCol
-      Try(x.reshape(Seq(5))) must beFailedTry
+      x.reshape(Seq(5)) must throwA[IllegalArgumentException]
       x.asCol() === Array(1, 2).asCol
       x.asCol().asRow === Array(1, 2).asRow
       in.isView === true
@@ -532,13 +531,13 @@ class TensorSpec extends Specification {
     }
     "drop singular dimension" in {
       val t = Array[Int](
-        1,2,3
-      )
-        .asTensor(1,3,1)
+        1, 2, 3)
+        .asTensor(1, 3, 1)
       t.dropSingular(2).shape === Seq(1, 3)
+      t.dropSingular(1) must throwA[IllegalArgumentException]
     }
-    "add singualr dimension" in {
-      val t = Array(1,2,3,4).asCols(2).addSingular(1)
+    "add singular dimension" in {
+      val t = Array(1, 2, 3, 4).asCols(2).addSingular(1)
       t.shape === Seq(2, 1, 2)
     }
   }
