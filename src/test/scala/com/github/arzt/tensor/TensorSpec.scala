@@ -540,5 +540,14 @@ class TensorSpec extends Specification {
       val t = Array(1, 2, 3, 4).asCols(2).addSingular(1)
       t.shape === Seq(2, 1, 2)
     }
+    "Indexing tensor" in {
+      val shape = Vector(2, 3, 4)
+      val t = IndexTensor(shape)
+      (0 until t.length)
+        .foreach { i =>
+          println(t(i))
+        }
+      t.length === shape.product
+    }
   }
 }
