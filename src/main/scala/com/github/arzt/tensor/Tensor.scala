@@ -348,10 +348,19 @@ private class DissectTensor[T](dims: immutable.Seq[Int], val tensor: Tensor[T])(
   val shape: immutable.Seq[Int] =
     dims
       .toVector
-      .foldLeft(tensor.shape) {
-        case (a,b) =>
-          a.updated(b, 1)
+      .foldLeft(tensor.shape) { case (acc, i) =>
+        acc.updated(i, 1)
       }
+
+  private def antiDims = tensor.shape.indices.toSet -- dims
+
+  private val childShape: immutable.Seq[Int] =
+    antiDims
+      .toVector
+      .foldLeft(tensor.shape) { case (acc, i) =>
+        acc.updated(i, 1)
+      }
+
 
   override def isView: Boolean = true
 
