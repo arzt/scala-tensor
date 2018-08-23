@@ -343,3 +343,21 @@ private class IndexTensor(val shape: immutable.Seq[Int]) extends Tensor[Seq[Int]
 object IndexTensor {
   def apply(shape: immutable.Seq[Int]): Tensor[Seq[Int]] = new IndexTensor(shape)
 }
+
+private class DissectTensor[T](dims: immutable.Seq[Int], val tensor: Tensor[T])(implicit val tag: ClassTag[Tensor[T]]) extends Tensor[Tensor[T]] {
+  val shape: immutable.Seq[Int] =
+    dims
+      .toVector
+      .foldLeft(tensor.shape) {
+        case (a,b) =>
+          a.updated(b, 1)
+      }
+
+  override def isView: Boolean = true
+
+  override def apply(a: Int): Tensor[T] = ???
+
+  override def update(a: Int, v: Tensor[T]): Unit = ???
+
+  override def toSeq: Seq[Tensor[T]] = (0 until length).view.map(apply)
+}
