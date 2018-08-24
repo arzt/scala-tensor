@@ -13,7 +13,8 @@ sealed trait Tensor[T] {
 
   def shape: immutable.Seq[Int]
 
-  require(shape.forall(_ > 0), "Tensor dimensions must be greater than zero")
+  private val t2: Boolean = shape.forall(_ > 0)
+  require(t2, "Tensor dimensions must be greater than zero")
 
   def rank: Int = shape.length
 
@@ -215,6 +216,33 @@ sealed trait Tensor[T] {
     val newShape = (before :+ 1) ++ after
     new ReshapeTensor[T](newShape.toIndexedSeq, this)
   }
+
+  def dissect(dims: Int*): Tensor[Tensor[T]] = {
+    val newShape: immutable.Seq[Int] =
+      dims
+        .toVector
+        .foldLeft(this.shape) { case (acc, i) =>
+          acc.updated(i, 1)
+        }
+    val antiDims = this.shape.indices.toSet -- dims
+
+    val childShape =
+      antiDims
+        .toVector
+        .foldLeft(this.shape) { case (acc, i) =>
+          acc.updated(i, 1)
+        }
+
+    val hui = new IndexTensor(newShape).map(_.toVector).apply()
+
+    new IndexTensor(newShape)
+      .map { index =>
+        println(index)
+        println(newShape)
+        new ViewTensor(childShape, this, x => x)
+      }
+  }
+
 }
 
 object Tensor {
@@ -342,31 +370,4 @@ private class IndexTensor(val shape: immutable.Seq[Int]) extends Tensor[Seq[Int]
 
 object IndexTensor {
   def apply(shape: immutable.Seq[Int]): Tensor[Seq[Int]] = new IndexTensor(shape)
-}
-
-private class DissectTensor[T](dims: immutable.Seq[Int], val tensor: Tensor[T])(implicit val tag: ClassTag[Tensor[T]]) extends Tensor[Tensor[T]] {
-  val shape: immutable.Seq[Int] =
-    dims
-      .toVector
-      .foldLeft(tensor.shape) { case (acc, i) =>
-        acc.updated(i, 1)
-      }
-
-  private def antiDims = tensor.shape.indices.toSet -- dims
-
-  private val childShape: immutable.Seq[Int] =
-    antiDims
-      .toVector
-      .foldLeft(tensor.shape) { case (acc, i) =>
-        acc.updated(i, 1)
-      }
-
-
-  override def isView: Boolean = true
-
-  override def apply(a: Int): Tensor[T] = ???
-
-  override def update(a: Int, v: Tensor[T]): Unit = ???
-
-  override def toSeq: Seq[Tensor[T]] = (0 until length).view.map(apply)
 }

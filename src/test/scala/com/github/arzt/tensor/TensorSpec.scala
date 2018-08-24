@@ -550,18 +550,34 @@ class TensorSpec extends Specification {
       t.length === shape.product
     }
     "dissect tensor" in {
-      val t = Array(
-        0,1,2,
-        3,4,5
-      )
-        .asTensor(3, 2, 1)
-        .dissect(1, 2)
-      val expectet =
-        Array[Tensor[Int]](
+      val t: Tensor[Tensor[Int]] = Array(
+        0, 1,
+        2, 3,
+        4, 5,
 
+        6, 7,
+        8, 9,
+        10, 11
+      )
+        .asTensor(2, 3, 2)
+        .dissect(1, 2)
+      val expected: Tensor[Tensor[Int]] =
+        Array[Tensor[Int]](
+          Array(
+            0, 1,
+            2, 3,
+            4, 5
+          )
+            .asTensor(1, 3, 2),
+          Array(
+            6, 7,
+            8, 9,
+            10, 11
+          )
+            .asTensor(1, 3, 2)
         )
-        .asTensor(3,1,1)
-      t === expectet
+          .asTensor(2, 1, 1)
+      t === expected
     }
   }
 }
