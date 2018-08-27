@@ -218,29 +218,32 @@ sealed trait Tensor[T] {
   }
 
   def dissect(dims: Int*): Tensor[Tensor[T]] = {
-    val newShape: immutable.Seq[Int] =
+    val antiDims = shape.indices.toSet -- dims
+    val parentShape =
       dims
-        .toVector
-        .foldLeft(this.shape) { case (acc, i) =>
+        .foldLeft(shape) { case (acc, i) =>
           acc.updated(i, 1)
         }
-    val antiDims = this.shape.indices.toSet -- dims
-
     val childShape =
       antiDims
-        .toVector
-        .foldLeft(this.shape) { case (acc, i) =>
+        .foldLeft(shape) { case (acc, i) =>
           acc.updated(i, 1)
         }
-
-    val hui = new IndexTensor(newShape).map(_.toVector).apply()
-
-    new IndexTensor(newShape)
+    val tu = new IndexTensor(parentShape)
       .map { index =>
-        println(index)
-        println(newShape)
-        new ViewTensor(childShape, this, x => x)
+        val is = new Array[Seq[Int]](shape.length)
+        antiDims
+          .foreach { i =>
+            is(i) = Array(index(i))
+          }
+        dims
+          .foreach { i =>
+            is(i) = 0 until shape(i)
+          }
+        val mapping = indices(stride, is: _*)
+        new ViewTensor(childShape, this, mapping): Tensor[T]
       }
+    tu.apply()
   }
 
 }
@@ -355,9 +358,9 @@ private class IndexTensor(val shape: immutable.Seq[Int]) extends Tensor[Seq[Int]
 
   override def isView: Boolean = false
 
-  private val output = new Array[Int](stride.length)
 
   override def apply(i: Int): Seq[Int] = {
+    val output = new Array[Int](shape.length)
     unindex(stride, output)(i)
     output
   }
