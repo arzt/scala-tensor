@@ -218,21 +218,15 @@ sealed trait Tensor[T] {
   }
 
   def dissect(dims: Int*): Tensor[Tensor[T]] = {
-    val antiDims = shape.indices.toSet -- dims
-    val parentShape =
-      dims
-        .foldLeft(shape) { case (acc, i) =>
-          acc.updated(i, 1)
-        }
-    val childShape =
-      antiDims
-        .foldLeft(shape) { case (acc, i) =>
-          acc.updated(i, 1)
-        }
-    val tu = new IndexTensor(parentShape)
+    val remainingDims = shape.indices.toSet -- dims
+    val parentShape = dims
+      .foldLeft(shape)(_.updated(_, 1))
+    val childShape = remainingDims
+      .foldLeft(shape)(_.updated(_, 1))
+    new IndexTensor(parentShape)
       .map { index =>
         val is = new Array[Seq[Int]](shape.length)
-        antiDims
+        remainingDims
           .foreach { i =>
             is(i) = Array(index(i))
           }
@@ -243,7 +237,7 @@ sealed trait Tensor[T] {
         val mapping = indices(stride, is: _*)
         new ViewTensor(childShape, this, mapping): Tensor[T]
       }
-    tu.apply()
+      .apply()
   }
 
 }
