@@ -215,6 +215,30 @@ sealed trait Tensor[T] {
     val newShape = (before :+ 1) ++ after
     new ReshapeTensor[T](newShape.toIndexedSeq, this)
   }
+
+  def dissect(dims: Int*): Tensor[Tensor[T]] = {
+    val remainingDims = shape.indices.toSet -- dims
+    val parentShape = dims
+      .foldLeft(shape)(_.updated(_, 1))
+    val childShape = remainingDims
+      .foldLeft(shape)(_.updated(_, 1))
+    new IndexTensor(parentShape)
+      .map { index =>
+        val is = new Array[Seq[Int]](shape.length)
+        remainingDims
+          .foreach { i =>
+            is(i) = Array(index(i))
+          }
+        dims
+          .foreach { i =>
+            is(i) = 0 until shape(i)
+          }
+        val mapping = indices(stride, is: _*)
+        new ViewTensor(childShape, this, mapping): Tensor[T]
+      }
+      .apply()
+  }
+
 }
 
 object Tensor {
@@ -327,9 +351,9 @@ private class IndexTensor(val shape: immutable.Seq[Int]) extends Tensor[Seq[Int]
 
   override def isView: Boolean = false
 
-  private val output = new Array[Int](stride.length)
 
   override def apply(i: Int): Seq[Int] = {
+    val output = new Array[Int](shape.length)
     unindex(stride, output)(i)
     output
   }

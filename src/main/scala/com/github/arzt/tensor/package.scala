@@ -3,7 +3,7 @@ package com.github.arzt
 package object tensor {
   type Index = Int => Seq[Int]
 
-  def indices(stride: Array[Int], is: Array[Int]*): Array[Int] = {
+  def indices(stride: Array[Int], is: Seq[Int]*): Array[Int] = {
     val n = is.view.map(_.length).product
     val output = new Array[Int](n)
     var i = 0
