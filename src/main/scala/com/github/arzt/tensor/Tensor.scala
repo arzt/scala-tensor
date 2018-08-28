@@ -13,8 +13,7 @@ sealed trait Tensor[T] {
 
   def shape: immutable.Seq[Int]
 
-  private val t2: Boolean = shape.forall(_ > 0)
-  require(t2, "Tensor dimensions must be greater than zero")
+  require(shape.forall(_ > 0), "Tensor dimensions must be greater than zero")
 
   def rank: Int = shape.length
 
