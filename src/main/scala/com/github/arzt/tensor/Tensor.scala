@@ -325,3 +325,48 @@ private class ViewTensor[T](val shape: immutable.Seq[Int], val tensor: Tensor[T]
 
 private class TransposeTensor[T](shape: immutable.Seq[Int], tensor: Tensor[T], map: Int => Int)(override implicit val tag: ClassTag[T])
   extends ViewTensor[T](shape, tensor, map)
+
+private class ReshapeTensor[T](val shape: immutable.Seq[Int], val tensor: Tensor[T])(implicit val tag: ClassTag[T]) extends Tensor[T] {
+  override def isView: Boolean = true
+
+  override def apply(i: Int): T = tensor(i)
+
+  override def update(i: Int, v: T): Unit = tensor(i) = v
+
+  override def toSeq: Seq[T] = (0 until length).view.map(apply)
+}
+
+private class EchoTensor(val shape: immutable.Seq[Int]) extends Tensor[Int] {
+  override implicit val tag: ClassTag[Int] = implicitly[ClassTag[Int]]
+
+  override def isView: Boolean = false
+
+  override def apply(a: Int): Int = a
+
+  override def update(a: Int, v: Int): Unit =
+    throw new UnsupportedOperationException("Update not supported on IndexTensor, call apply() first")
+
+  override def toSeq: Seq[Int] = 0 until length
+}
+
+private class IndexTensor(val shape: immutable.Seq[Int]) extends Tensor[Seq[Int]] {
+  override implicit val tag: ClassTag[Seq[Int]] = implicitly[ClassTag[Seq[Int]]]
+
+  override def isView: Boolean = false
+
+
+  override def apply(i: Int): Seq[Int] = {
+    val output = new Array[Int](shape.length)
+    unindex(stride, output)(i)
+    output
+  }
+
+  override def update(a: Int, v: Seq[Int]): Unit =
+    throw new UnsupportedOperationException("Update not supported on IndexTensor, call apply() first")
+
+  override def toSeq: Seq[Seq[Int]] = (0 until length).map(apply)
+}
+
+object IndexTensor {
+  def apply(shape: immutable.Seq[Int]): Tensor[Seq[Int]] = new IndexTensor(shape)
+}
