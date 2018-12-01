@@ -612,27 +612,22 @@ class TensorSpec extends Specification {
     }
     "concatenate tensors along one dimension" in {
       val a = Array[Int](
-        0,
-        1
+        0, 1,
+        2, 3
       )
-        .asCol
+        .asTensor(2, 2)
       val b = Array[Int](
-        2,
-        3
+        4, 5
       )
-        .asCol
-      val c = Array[Int](
-        4,
-        5
-      )
-        .asCol
-      val result = a.concat(0, b, c)
+        .asTensor(1, 2)
+      val result = Array(a,b).asCol
       val exp = Array[Int](
-        0, 2, 4,
-        1, 3, 5
+        0, 1,
+        2, 3,
+        4, 5
       )
-        .asRows(2)
-      result === exp
+        .asRows(3)
+      result.concat() === exp
     }
   }
 }

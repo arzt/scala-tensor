@@ -39,7 +39,6 @@ package object tensor {
 
   private[tensor] def index(stride: Array[Int]): (Int => Int) => Int =
     is => {
-      val hui = stride.indices.map(is).toArray
       var i = 0
       var out: Int = 0
       while (i < stride.length) {
