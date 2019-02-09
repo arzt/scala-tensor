@@ -5,7 +5,7 @@ import op.TensorMultiplication
 import scala.collection.immutable
 import scala.reflect.ClassTag
 
-sealed trait Tensor[T] {
+trait Tensor[T] {
 
   implicit val tag: ClassTag[T]
 
@@ -333,10 +333,10 @@ private class ReshapeTensor[T](val shape: immutable.Seq[Int], val tensor: Tensor
   override def toSeq: Seq[T] = (0 until length).view.map(apply)
 }
 
-private class EchoTensor(val shape: immutable.Seq[Int]) extends Tensor[Int] {
+class EchoTensor(val shape: immutable.Seq[Int]) extends Tensor[Int] {
   override implicit val tag: ClassTag[Int] = implicitly[ClassTag[Int]]
 
-  override def isView: Boolean = false
+  override def isView: Boolean = true
 
   override def apply(a: Int): Int = a
 
@@ -344,6 +344,10 @@ private class EchoTensor(val shape: immutable.Seq[Int]) extends Tensor[Int] {
     throw new UnsupportedOperationException("Update not supported on IndexTensor, call apply() first")
 
   override def toSeq: Seq[Int] = 0 until length
+}
+
+object EchoTensor {
+  def apply(shape: immutable.Seq[Int]) = new EchoTensor(shape)
 }
 
 private class IndexTensor(val shape: immutable.Seq[Int]) extends Tensor[Seq[Int]] {
@@ -368,42 +372,5 @@ object IndexTensor {
   def apply(shape: immutable.Seq[Int]): Tensor[Seq[Int]] = new IndexTensor(shape)
 }
 
-private class MergeTensor[T](val shape: immutable.Seq[Int],
-                             parent: Tensor[Tensor[T]],
-                             parentMap: Int => Int,
-                             childMap: Int => Int)(implicit val tag: ClassTag[T]) extends Tensor[T] {
 
-  override def isView: Boolean = true
 
-  override def apply(i: Int): T = {
-    val child = parent(parentMap(i))
-    val item = child(childMap(i))
-    item
-  }
-
-  override def update(i: Int, v: T): Unit =
-    parent(parentMap(i))(childMap(i)) = v
-
-  override def toSeq: Seq[T] = (0 until length).map(apply)
-}
-
-object MergeTensor {
-
-  private[tensor] def getShape[T](t: Tensor[Tensor[T]]): immutable.Seq[Int] = {
-    val shapes = t.map(_.shape)
-    val test = shapes
-      .dissect(0)
-      .map { x =>
-        x
-          .toSeq
-          .reduce(
-            (a, b) => {
-              a.updated(0, a(0) + b(0))
-            }
-          )
-      }
-      .apply()
-    test(0)
-  }
-
-}
