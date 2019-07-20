@@ -1,6 +1,6 @@
 package com.github.arzt.tensor
 
-import op.TensorMultiplication
+import com.github.arzt.tensor.op.TensorMultiplication
 
 import scala.collection.immutable
 import scala.reflect.ClassTag
@@ -118,7 +118,7 @@ trait Tensor[T] {
     new String(tap)
     * */
     val shapeStr = shape.mkString("[", " ", "]")
-    val valuesStr = toSeq.take(20).mkString("[", " ", "]")
+    val valuesStr = toSeq.take(30).mkString("[", " ", "]")
     s"Tensor(n=$length, shape=$shapeStr, values=$valuesStr)"
   }
 
@@ -165,7 +165,7 @@ trait Tensor[T] {
       pi(n - 1) = tmp
       val newShape = shape.indices.map(pi andThen shape)
       val mapping = permuteMapping(pi, stride, newShape)
-      new TransposeTensor[T](newShape, this, mapping)
+      new TransposeTensor[T](newShape, this, mapping)(tag)
     }
   }
 
@@ -347,14 +347,13 @@ class EchoTensor(val shape: immutable.Seq[Int]) extends Tensor[Int] {
 }
 
 object EchoTensor {
-  def apply(shape: immutable.Seq[Int]) = new EchoTensor(shape)
+  def apply(shape: immutable.Seq[Int]): Tensor[Int] = new EchoTensor(shape)
 }
 
 private class IndexTensor(val shape: immutable.Seq[Int]) extends Tensor[Seq[Int]] {
   override implicit val tag: ClassTag[Seq[Int]] = implicitly[ClassTag[Seq[Int]]]
 
   override def isView: Boolean = false
-
 
   override def apply(i: Int): Seq[Int] = {
     val output = new Array[Int](shape.length)
@@ -371,6 +370,4 @@ private class IndexTensor(val shape: immutable.Seq[Int]) extends Tensor[Seq[Int]
 object IndexTensor {
   def apply(shape: immutable.Seq[Int]): Tensor[Seq[Int]] = new IndexTensor(shape)
 }
-
-
 

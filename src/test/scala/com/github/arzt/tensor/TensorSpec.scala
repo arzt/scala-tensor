@@ -557,24 +557,20 @@ class TensorSpec extends Specification {
 
         6, 7,
         8, 9,
-        10, 11
-      )
+        10, 11)
         .asTensor(2, 3, 2)
       val expected: Tensor[Tensor[Int]] =
         Array[Tensor[Int]](
           Array(
             0, 1,
             2, 3,
-            4, 5
-          )
+            4, 5)
             .asTensor(1, 3, 2),
           Array(
             6, 7,
             8, 9,
-            10, 11
-          )
-            .asTensor(1, 3, 2)
-        )
+            10, 11)
+            .asTensor(1, 3, 2))
           .asTensor(2, 1, 1)
       val expected2: Tensor[Tensor[Int]] =
         Array[Tensor[Int]](
@@ -585,8 +581,7 @@ class TensorSpec extends Specification {
 
             6,
             8,
-            10
-          )
+            10)
             .asTensor(2, 3, 1),
           Array(
             1,
@@ -595,10 +590,8 @@ class TensorSpec extends Specification {
 
             7,
             9,
-            11
-          )
-            .asTensor(2, 3, 1)
-        )
+            11)
+            .asTensor(2, 3, 1))
           .asTensor(1, 1, 2)
 
       val a1 = Array(0, 2, 4).asTensor(1, 3, 1)
@@ -613,19 +606,16 @@ class TensorSpec extends Specification {
     "concatenate tensors along one dimension" in {
       val a = Array[Int](
         0, 1,
-        2, 3
-      )
+        2, 3)
         .asTensor(2, 2)
       val b = Array[Int](
-        4, 5
-      )
+        4, 5)
         .asTensor(1, 2)
-      val result = Array(a,b).asCol
+      val result = Array(a, b).asCol
       val exp = Array[Int](
         0, 1,
         2, 3,
-        4, 5
-      )
+        4, 5)
         .asRows(3)
       result.concat() === exp
     }

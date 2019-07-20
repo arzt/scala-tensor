@@ -41,33 +41,30 @@ object MergeTensor {
 
   private[tensor] def getParentAndChildMap[T](t: Tensor[Tensor[T]], shape: immutable.Seq[Int]): (Array[Int], Array[Int]) = {
     val width = shape.last
+    val tWidth = t.shape.last
     val n = shape.product
     val pos = new Array[Int](t.length)
     val widths = t.map(_.shape.last).toSeq.toArray
     val lengths = t.map(_.length).toSeq.toArray
     val parentMap = new Array[Int](n)
     val childMap = new Array[Int](n)
-    var child = 0
+    val link = (0 until tWidth).toArray
     var i = 0
-    val last = (0 until width).toArray
-    var lastChild = 0
+    var c = 0
     while (i < n) {
+      val child = link(c)
       parentMap(i) = child
       childMap(i) = pos(child)
       pos(child) += 1
 
-      if (pos(lastChild) == lengths(lastChild)) {
-        lastChild += 1
+      if (pos(child) == lengths(child)) {
+        link(c) += tWidth
       }
-
-      i += 1
-
       if (pos(child) % widths(child) == 0) {
-        child += 1
+        c += 1
+        c %= tWidth
       }
-      if (i % width == 0) {
-        child = lastChild
-      }
+      i += 1
     }
     (parentMap, childMap)
   }
