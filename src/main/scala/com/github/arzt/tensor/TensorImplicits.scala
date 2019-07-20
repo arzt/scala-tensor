@@ -79,6 +79,14 @@ object TensorImplicits {
 
   }
 
+  implicit class ConcatOps[T: ClassTag](tensor: Tensor[Tensor[T]]) {
+    def concat(): Tensor[T] = {
+      val shape = MergeTensor.getShape[T](tensor)
+      val (parentMap, childMap) = MergeTensor.getParentAndChildMap[T](tensor, shape)
+      new MergeTensor[T](shape, tensor, parentMap, childMap)
+    }
+  }
+
   implicit def int2Index(i: Int): Index = dim => Seq(((i % dim) + dim) % dim)
 
   implicit def seq2Index(seq: Seq[Int]): Index = _ => seq

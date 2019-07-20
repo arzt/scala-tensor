@@ -610,5 +610,21 @@ class TensorSpec extends Specification {
       tensor.dissect(0, 1) === expected2
       tensor.dissect(1) === expected3
     }
+    "concatenate tensors along one dimension" in {
+      val a = Array[Int](
+        0, 1,
+        2, 3)
+        .asTensor(2, 2)
+      val b = Array[Int](
+        4, 5)
+        .asTensor(1, 2)
+      val result = Array(a, b).asCol
+      val exp = Array[Int](
+        0, 1,
+        2, 3,
+        4, 5)
+        .asRows(3)
+      result.concat() === exp
+    }
   }
 }
