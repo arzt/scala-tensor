@@ -9,8 +9,8 @@ class TensorSpec extends Specification {
   "Tensors" should {
     "read elements by index" in {
       val data = Array[Int](0, 1, 2, 3, 4, 5, 6, 7)
-      val t1 = Tensor(Vector(2, 4), data)
-      val t2 = Tensor(Vector(2, 2, 2), data)
+      val t1 = Tensor(data, 2, 4)
+      val t2 = Tensor(data, 2, 2, 2)
       t1.isView === false
       t1(0) === 0
       t1(4) === 4
@@ -26,7 +26,7 @@ class TensorSpec extends Specification {
       t2(1, 1, 1) === 7
     }
     "tensor with offset" in {
-      val t = Tensor(Vector(1, 1), Array(1, 2, 3), 1)
+      val t = Tensor(1, Array(1, 2, 3), 1, 1)
       t(0, 0) === 2
       t.apply(0, 1) === 3
     }
@@ -35,7 +35,7 @@ class TensorSpec extends Specification {
       t(0, 0) === 1
     }
     "tesor with data and offset" in {
-      val t = Tensor(Array(1, 2), 1)
+      val t = Tensor(1, Array(1, 2))
       t(0, 0) === 2
     }
     "read 4d tensor" in {
@@ -56,18 +56,18 @@ class TensorSpec extends Specification {
         1, 2, 3, 4,
         5, 6, 7, 8,
         9, 10, 11, 12)
-      val t = Tensor(Vector(1, 12), data)
+      val t = Tensor(data, 1, 12)
       t(0) = 7
       t(0) === 7
-      val t1 = Tensor(Vector(3, 4), data)
+      val t1 = Tensor(data, 3, 4)
       t1(2, 3) = 8
       t1(2, 3) === 8
-      val t2 = Tensor(Vector(2, 3, 2), data)
+      val t2 = Tensor(data, 2, 3, 2)
       t2(0, 1, 1) = -5
       t2(0, 1, 1) === -5
     }
     "read indexed data" in {
-      val t = Tensor(Vector(3, 3), Array(1, 2, 3, 4, 5, 6, 7, 8, 9))
+      val t = Tensor(Array(1, 2, 3, 4, 5, 6, 7, 8, 9), 3, 3)
       val r = t(1 until 2, 1 until 2)
       r(0) === 5
     }
@@ -76,9 +76,9 @@ class TensorSpec extends Specification {
       val rep = strings.toString
 
       val data = Array[Int](1, 2, 3, 4)
-      Tensor(Vector(2, 2), data).toString mustEqual " 1 2\n 3 4\n"
-      Tensor(Vector(4, 1), data).toString mustEqual " 1\n 2\n 3\n 4\n"
-      Tensor(Vector(1, 4), data).toString mustEqual " 1 2 3 4\n"
+      Tensor(data, 2, 2).toString mustEqual " 1 2\n 3 4\n"
+      Tensor(data, 4, 1).toString mustEqual " 1\n 2\n 3\n 4\n"
+      Tensor(data, 1, 4).toString mustEqual " 1 2 3 4\n"
     }
     "equality" in {
       Array(1).asRow === Array(1).asRow
@@ -87,12 +87,12 @@ class TensorSpec extends Specification {
     }
     "as matrix by number of cols" in {
       val a = Array(1, 2, 3).asCols(3)
-      val b = Tensor(Vector(1, 3), Array(1, 2, 3))
+      val b = Tensor(Array(1, 2, 3), 1, 3)
       a === b
     }
     "as column" in {
       val a = Array(1, 2, 3).asCol
-      val b = Tensor(Vector(3, 1), Array(1, 2, 3))
+      val b = Tensor(Array(1, 2, 3), 3, 1)
       a === b
     }
     "with offset" in {
@@ -105,8 +105,8 @@ class TensorSpec extends Specification {
         1, 2, 0, 0,
         0, 0, 0, 0)
       val zeros = new Array[Int](8)
-      val a = Tensor(Vector(2, 4), data)
-      val b = Tensor(Vector(2, 4), zeros)
+      val a = Tensor(data, 2, 4)
+      val b = Tensor(zeros, 2, 4)
       b := a
       data.toSeq === zeros.toSeq
     }
@@ -127,7 +127,7 @@ class TensorSpec extends Specification {
       val data = Array[Int](
         1, 2, 0, 0,
         0, 0, 0, 0)
-      val t = Tensor(Vector(2, 4), data)
+      val t = Tensor(data, 2, 4)
       t(1 to 1, 2 to 3) = t(0 to 0, 0 to 1)
       val expected = Seq(
         1, 2, 0, 0,
@@ -138,26 +138,24 @@ class TensorSpec extends Specification {
       val data = Array[Int](
         1, 2, 0, 0,
         0, 0, 0, 0)
-      val t = Tensor(Vector(2, 4), data)
+      val t = Tensor(data, 2, 4)
       val t2 = t()
       t2.toSeq === t.toSeq
     }
     "linear view" in {
       import TensorImplicits._
-      val view = Array[Int](
-        1, 2, 3,
-        4, 5, 6)
+      val view = Array[Int](1, 2, 3, 4, 5, 6)
         .asTensor(2, 3)
         .apply(0 to 1, 1 to 1)
         .toSeq
-      view.view.force === Seq(2, 5)
+      view === Seq(2, 5)
     }
     "equal" in {
-      val a = Tensor(Vector(3), Array(1, 2, 3))
-      val b = Tensor(Vector(3), Array(1, 2, 3))
-      val c = Tensor(Vector(3), Array(1, 2, 4))
-      val d = Tensor(Vector(1, 3), Array(1, 2, 3))
-      val e = Tensor(Vector(3), Array(0, 0, 1, 2, 3), 2)
+      val a = Tensor(Array(1, 2, 3), 3)
+      val b = Tensor(Array(1, 2, 3), 3)
+      val c = Tensor(Array(1, 2, 4), 3)
+      val d = Tensor(Array(1, 2, 3), 1, 3)
+      val e = Tensor(2, Array(0, 0, 1, 2, 3), 3)
       a === a
       b === a
       a === b
@@ -174,7 +172,7 @@ class TensorSpec extends Specification {
       t.toSeq === Seq(1, 2, 3)
     }
     "get nrows and ncols" in {
-      val t = Tensor(Vector(3, 4))
+      val t = Tensor(3, 4)
       t.cols === 4
       t.rows === 3
     }
@@ -520,9 +518,9 @@ class TensorSpec extends Specification {
     "reshape" in {
       val data = Array(1, 2)
       val x = data.asRow
-      val in = x.reshape(Array(2, 1))
+      val in = x.reshape(2, 1)
       in === Array(1, 2).asCol
-      x.reshape(Seq(5)) must throwA[IllegalArgumentException]
+      x.reshape(5) must throwA[IllegalArgumentException]
       x.asCol() === Array(1, 2).asCol
       x.asCol().asRow === Array(1, 2).asRow
       in.isView === true
@@ -557,24 +555,20 @@ class TensorSpec extends Specification {
 
         6, 7,
         8, 9,
-        10, 11
-      )
+        10, 11)
         .asTensor(2, 3, 2)
       val expected: Tensor[Tensor[Int]] =
         Array[Tensor[Int]](
           Array(
             0, 1,
             2, 3,
-            4, 5
-          )
+            4, 5)
             .asTensor(1, 3, 2),
           Array(
             6, 7,
             8, 9,
-            10, 11
-          )
-            .asTensor(1, 3, 2)
-        )
+            10, 11)
+            .asTensor(1, 3, 2))
           .asTensor(2, 1, 1)
       val expected2: Tensor[Tensor[Int]] =
         Array[Tensor[Int]](
@@ -585,8 +579,7 @@ class TensorSpec extends Specification {
 
             6,
             8,
-            10
-          )
+            10)
             .asTensor(2, 3, 1),
           Array(
             1,
@@ -595,10 +588,8 @@ class TensorSpec extends Specification {
 
             7,
             9,
-            11
-          )
-            .asTensor(2, 3, 1)
-        )
+            11)
+            .asTensor(2, 3, 1))
           .asTensor(1, 1, 2)
 
       val a1 = Array(0, 2, 4).asTensor(1, 3, 1)

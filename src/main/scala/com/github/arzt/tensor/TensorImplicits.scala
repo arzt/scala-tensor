@@ -11,12 +11,12 @@ object TensorImplicits {
 
   case class WithOffset[T: ClassTag] private (data: Array[T], offset: Int) {
     def asTensor(dim: Int*): Tensor[T] =
-      Tensor[T](dim.toVector, data, offset)
+      Tensor[T](offset, data, dim: _*)
   }
 
   implicit class ArrayOps[T: ClassTag](data: Array[T]) {
 
-    def asTensor(dim: Int*): Tensor[T] = Tensor(dim.toVector, data)
+    def asTensor(dim: Int*): Tensor[T] = Tensor(data, dim: _*)
 
     def asRows(rows: Int): Tensor[T] = asTensor(rows, data.length / rows)
 
@@ -95,7 +95,7 @@ object TensorImplicits {
     Iterator
       .continually(seq)
     assert(dimSize == seq.size)
-    (0 until dimSize).view.filter(seq)
+    (0 until dimSize).view.filter(seq).toArray.toSeq
   }
 
   implicit def tripleToIndex(tripple: (Int, Int, Int)): Index =

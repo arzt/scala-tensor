@@ -53,25 +53,25 @@ trait Tensor[T] {
   }
 
   def apply(b: Index, a: Index): Tensor[T] = {
-    val u = b(shape(0)).toArray
-    val v = a(shape(1)).toArray
+    val u = b(shape(0))
+    val v = a(shape(1))
     val mapping = indices(stride, u, v)
     new ViewTensor(Vector(u.size, v.size), this, mapping)
   }
 
   def apply(c: Index, b: Index, a: Index): Tensor[T] = {
-    val sa = c(shape(0)).toArray
-    val sb = b(shape(1)).toArray
-    val sc = a(shape(2)).toArray
+    val sa = c(shape(0))
+    val sb = b(shape(1))
+    val sc = a(shape(2))
     val mapping = indices(stride, sa, sb, sc)
     new ViewTensor(Vector(sa.length, sb.length, sc.length), this, mapping)
   }
 
   def apply(d: Index, c: Index, b: Index, a: Index): Tensor[T] = {
-    val sd = d(shape(0)).toArray
-    val sc = c(shape(1)).toArray
-    val sb = b(shape(2)).toArray
-    val sa = a(shape(3)).toArray
+    val sd = d(shape(0))
+    val sc = c(shape(1))
+    val sb = b(shape(2))
+    val sa = a(shape(3))
     val mapping = indices(stride, sd, sc, sb, sa)
     new ViewTensor(Vector(sd.length, sc.length, sb.length, sa.length), this, mapping)
   }
@@ -189,14 +189,14 @@ trait Tensor[T] {
           .data
     }
 
-  def reshape(newShape: Seq[Int]): Tensor[T] = {
+  def reshape(newShape: Int*): Tensor[T] = {
     require(this.length == newShape.product, "Reshaping with incompatible shapes.")
     new ReshapeTensor[T](newShape.toVector, this)
   }
 
-  def asRow(): Tensor[T] = reshape(Seq(1, this.length))
+  def asRow(): Tensor[T] = reshape(1, this.length)
 
-  def asCol(): Tensor[T] = reshape(Seq(this.length, 1))
+  def asCol(): Tensor[T] = reshape(this.length, 1)
 
   def dropSingular(dim: Int): Tensor[T] = {
     require(shape(dim) == 1, "dimension at index $dim must be equal 1")
@@ -210,7 +210,7 @@ trait Tensor[T] {
   }
 
   def addSingular(dim: Int): Tensor[T] = {
-    val before = shape.view.slice(0, dim)
+    val before = shape.slice(0, dim)
     val after = shape.view.slice(dim, shape.length)
     val newShape = (before :+ 1) ++ after
     new ReshapeTensor[T](newShape.toIndexedSeq, this)
@@ -227,13 +227,13 @@ trait Tensor[T] {
         val is = new Array[Seq[Int]](shape.length)
         remainingDims
           .foreach { i =>
-            is(i) = Array(index(i))
+            is(i) = Seq(index(i))
           }
         dims
           .foreach { i =>
             is(i) = 0 until shape(i)
           }
-        val mapping = indices(stride, is: _*)
+        val mapping = indices(stride, is.toSeq: _*)
         new ViewTensor(childShape, this, mapping): Tensor[T]
       }
       .apply()
@@ -243,22 +243,18 @@ trait Tensor[T] {
 
 object Tensor {
 
-  def apply[T: ClassTag](dim: Int*): Tensor[T] = Tensor[T](dim.toVector)
+  def apply[T: ClassTag](shape: Int*): Tensor[T] =
+    new ArrayTensor[T](shape.toVector, new Array[T](shape.product), 0)
 
-  def apply[T: ClassTag](data: Array[T]): Tensor[T] =
-    new ArrayTensor[T](Vector(data.length), data, 0)
+  def apply[T: ClassTag](data: Array[T], shape: Int*): Tensor[T] = {
+    new ArrayTensor[T](if (shape.isEmpty) Vector(data.length) else shape.toVector, data, 0)
+  }
 
-  def apply[T: ClassTag](data: Array[T], offset: Int): Tensor[T] =
+  def apply[T: ClassTag](offset: Int, data: Array[T]): Tensor[T] =
     new ArrayTensor[T](Vector(data.length), data, offset)
 
-  def apply[T: ClassTag](shape: immutable.Seq[Int], data: Array[T], offset: Int): Tensor[T] =
-    new ArrayTensor[T](shape, data, offset)
-
-  def apply[T: ClassTag](shape: immutable.Seq[Int], data: Array[T]): Tensor[T] =
-    new ArrayTensor[T](shape, data, 0)
-
-  def apply[T: ClassTag](shape: immutable.Seq[Int]): Tensor[T] =
-    new ArrayTensor[T](shape, new Array[T](shape.product), 0)
+  def apply[T: ClassTag](offset: Int, data: Array[T], shape: Int*): Tensor[T] =
+    new ArrayTensor[T](shape.toVector, data, offset)
 
 }
 
@@ -275,7 +271,7 @@ private class ArrayTensor[T] private[tensor] (
 
   override def apply()(implicit tag: ClassTag[T]): Tensor[T] = this
 
-  override def toSeq: Seq[T] = data.view.slice(offset, length + offset)
+  override def toSeq: Seq[T] = data.slice(offset, length + offset).toSeq
 
   override def isView = false
 }
@@ -289,7 +285,7 @@ private class CombineTensor[T, A, B](ta: Tensor[A], tb: Tensor[B], f: (A, B) => 
 
   override def apply(a: Int): T = f(ta(a), tb(a))
 
-  override def toSeq: Seq[T] = (0 until ta.length).view.map(apply)
+  override def toSeq: Seq[T] = (0 until ta.length).view.map(apply).toArray.toSeq
 
   override def update(a: Int, v: T): Unit =
     throw new UnsupportedOperationException("Update not supported on combined tensor view, call apply first")
@@ -314,7 +310,7 @@ private class ViewTensor[T](val shape: immutable.Seq[Int], val tensor: Tensor[T]
 
   override def update(i: Int, v: T): Unit = tensor.update(map(i), v)
 
-  override def toSeq: collection.Seq[T] = (0 until length).view.map(apply)
+  override def toSeq: Seq[T] = (0 until length).map(apply).toArray.toSeq
 
   override def isView: Boolean = true
 
@@ -330,7 +326,7 @@ private class ReshapeTensor[T](val shape: immutable.Seq[Int], val tensor: Tensor
 
   override def update(i: Int, v: T): Unit = tensor(i) = v
 
-  override def toSeq: Seq[T] = (0 until length).view.map(apply)
+  override def toSeq: Seq[T] = (0 until length).view.map(apply).toArray.toSeq
 }
 
 class EchoTensor(val shape: immutable.Seq[Int]) extends Tensor[Int] {
@@ -358,7 +354,7 @@ private class IndexTensor(val shape: immutable.Seq[Int]) extends Tensor[Seq[Int]
   override def apply(i: Int): Seq[Int] = {
     val output = new Array[Int](shape.length)
     unindex(stride, output)(i)
-    output
+    output.toSeq
   }
 
   override def update(a: Int, v: Seq[Int]): Unit =
