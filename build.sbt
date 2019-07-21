@@ -4,16 +4,18 @@ name := "scala-tensor"
 
 version := "0.0.1-SNAPSHOT"
 
+scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature", "-language:implicitConversions")
+
 organization := "com.github.arzt"
 
-scalaVersion := "2.12.8"
+scalaVersion := "2.13.0"
 
 libraryDependencies ++= Seq(
-  "org.specs2" %% "specs2-core" % "4.0.2" % "test",
+  "org.specs2" %% "specs2-core" % "4.6.0" % "test",
   "org.jblas" % "jblas" % "1.2.4"
 )
 
-crossScalaVersions := List("2.12.8", "2.11.12")
+crossScalaVersions := List("2.13.0", "2.12.8", "2.11.12")
 
 
 scalariformPreferences := scalariformPreferences.value
