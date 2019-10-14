@@ -2,10 +2,15 @@ package com.github.arzt
 
 package object math {
 
-  def generalizedMod(j: Int, n: Int): Int =
-    if (j > -1)
-      j % n
-    else
-      (j % n + n) % n
+  /**
+   * Computes positive integer number y (remainder) congruent to x modulo n
+   * @param x divident
+   * @param n divisor
+   * @return y remainder
+   */
+  def generalizedMod(x: Int, n: Int): Int = {
+    val m = x % n
+    if (m > -1) m else m + n
+  }
 
 }

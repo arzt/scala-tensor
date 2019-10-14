@@ -1,5 +1,6 @@
 package com.github.arzt.tensor
 
+import com.github.arzt.tensor.convert.Converter
 import com.github.arzt.tensor.op.TensorMultiplication
 
 import scala.collection.immutable
@@ -13,11 +14,11 @@ trait Tensor[T] {
 
   def shape: immutable.Seq[Int]
 
-  require(shape.forall(_ > 0), "Tensor dimensions must be greater than zero")
+  require(shape.forall(_ >= 0), "Tensor dimensions must be greater or equal to zero")
 
   def rank: Int = shape.length
 
-  val length: Int = shape.product
+  def length: Int = shape.product
 
   protected val stride: Array[Int] = toStride(shape.toArray)
 
@@ -238,6 +239,12 @@ trait Tensor[T] {
       }
       .apply()
   }
+
+  def convert[U: ClassTag](implicit converter: Converter[T, U]): Tensor[U] =
+    new ConvertTensor[U, T](shape.updated(shape.indices.last, shape.last * converter.n), this, converter)
+
+  def deflate[U: ClassTag](implicit converter: Converter[U, T]): Tensor[U] =
+    new DeflateTensor[U, T](shape.updated(shape.indices.last, shape.last / converter.n), this, converter)
 
 }
 

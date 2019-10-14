@@ -9,6 +9,7 @@ class MathSpec extends Specification {
       generalizedMod(5, 4) === 1
       generalizedMod(-1, 4) === 3
       generalizedMod(-4, 4) === 0
+      generalizedMod(-41, 4) === 3
     }
   }
 }
