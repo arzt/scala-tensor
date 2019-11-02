@@ -1,6 +1,6 @@
 package com.github.arzt.tensor.dim
 
-trait Dim[+T] extends Seq[Int] {
+sealed trait Dim extends Seq[Int] {
 
   def dimIndices: Seq[Int]
 
@@ -12,11 +12,7 @@ trait Dim[+T] extends Seq[Int] {
 
 }
 
-trait RDim[+T] extends Dim[T] {
-    def sub(x: Seq[Int]): Dim[T]
-}
-
-class UnitDim(val n: Int, val dimIndices: Seq[Int]) extends Dim[Nothing] {
+class UnitDim(val n: Int, val dimIndices: Seq[Int]) extends Dim {
 
   override def dims: List[Int] = List(length)
 
@@ -30,11 +26,11 @@ class UnitDim(val n: Int, val dimIndices: Seq[Int]) extends Dim[Nothing] {
 
 }
 
-class RecDim[K <: Dim[_]](
+class RecDim[K <: Dim](
   val n: Int,
   val dimIndices: Seq[Int],
   child: K
-) extends RDim[K] {
+) extends Dim {
 
   override def dims: List[Int] = dim :: child.dims
 
@@ -51,7 +47,7 @@ class RecDim[K <: Dim[_]](
     y
   }
 
-  override def sub(x: Seq[Int]): Dim[K] = this
+  def sub(x: Seq[Int]): RecDim[K] = this
 }
 
 object Dim {
@@ -60,7 +56,7 @@ object Dim {
 
   def apply(n: Int): UnitDim = new UnitDim(n, 0 until n)
 
-  def apply[K <: Dim[_]](n: Int, is: Seq[Int], parent: K): RDim[K] = new RecDim[K](n, is, parent)
+  def apply[K <: Dim](n: Int, is: Seq[Int], parent: K): RecDim[K] = new RecDim[K](n, is, parent)
 
-  def apply[K<: Dim[_]](n: Int, parent: K): RDim[K] = new RecDim[K](n, 0 until n, parent)
+  def apply[K<: Dim](n: Int, parent: K): RecDim[K] = new RecDim[K](n, 0 until n, parent)
 }
