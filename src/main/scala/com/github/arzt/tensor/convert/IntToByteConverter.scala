@@ -8,11 +8,9 @@ class IntToByteConverter extends Converter[Int, Byte] {
 
   val n = 4
 
-  val targetSize = 8
-
   def read(s: Int, i: Int): Byte =
-    readInt(targetSize, s, n - i - 1).toByte
+    readInt(8, s, n - i - 1).toByte
 
   def write(s: Int, i: Int, t: Byte): Int =
-    Converter.writeInt(targetSize, s, n - i - 1, t)
+    Converter.writeInt(8, s, n - i - 1, t)
 }

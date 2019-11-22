@@ -9,8 +9,6 @@ class IntToBooleanConverter extends Converter[Int, Boolean] {
 
   val zero = 0
 
-  val targetSize = 1
-
   override def read(s: Int, i: Int): Boolean =
     (readInt(1, s, n - i - 1) & 1) == 1
 

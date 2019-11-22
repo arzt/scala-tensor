@@ -4,8 +4,6 @@ trait Converter[S, T] {
 
   def zero: S
 
-  def targetSize: Int
-
   def n: Int
 
   def read(s: S, i: Int): T

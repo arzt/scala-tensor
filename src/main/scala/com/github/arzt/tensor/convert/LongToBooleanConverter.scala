@@ -9,11 +9,9 @@ class LongToBooleanConverter extends Converter[Long, Boolean] {
 
   val zero = 0
 
-  val targetSize = 1
-
   def read(s: Long, i: Int): Boolean =
-    (readLong(targetSize, s, n - i - 1) & 1) == 1
+    (readLong(1, s, n - i - 1) & 1) == 1
 
   def write(s: Long, i: Int, t: Boolean): Long =
-    writeLong(targetSize, s, n - i - 1, if (t) 1 else 0)
+    writeLong(1, s, n - i - 1, if (t) 1 else 0)
 }

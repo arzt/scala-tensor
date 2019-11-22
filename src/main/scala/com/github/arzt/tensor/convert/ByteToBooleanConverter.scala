@@ -9,11 +9,9 @@ class ByteToBooleanConverter extends Converter[Byte, Boolean] {
 
   override val n = 8
 
-  val targetSize = 1
-
   override def read(s: Byte, i: Int): Boolean =
-    (readInt(targetSize, s, n - i - 1) & 1) == 1
+    (readInt(1, s, n - i - 1) & 1) == 1
 
   override def write(s: Byte, i: Int, t: Boolean): Byte =
-    writeInt(targetSize, s, n - i - 1, if (t) 1 else 0).toByte
+    writeInt(1, s, n - i - 1, if (t) 1 else 0).toByte
 }
