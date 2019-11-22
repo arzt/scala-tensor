@@ -20,10 +20,6 @@ object Converter {
     s >> (i * size)
   }
 
-  def readBooleanInt(s: Int, i: Int): Boolean = {
-    ((s >> i) & 1) == 1
-  }
-
   def writeLong(size: Int, s: Long, i: Int, t: Long): Long = {
     val ones = ((1L << size) - 1) << (i * size)
     val zeros = ~ones
