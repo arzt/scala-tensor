@@ -619,8 +619,8 @@ class TensorSpec extends Specification {
       result.concat() === exp
     }
   }
-  "aa" should  {
-    "uao" in {
+  "inflate from long to int" should  {
+    "produce correct values" in {
       implicit val c = new LongToIntConverter
 
       val tensor = Array[Long](1,2,3,4)
@@ -628,8 +628,7 @@ class TensorSpec extends Specification {
         .convert[Int]
         .toSeq
 
-      println(tensor)
-      tensor shouldEqual Seq(1, 0, 2, 0, 3, 0, 4, 0)
+      tensor shouldEqual Seq(0, 1, 0, 2, 0, 3, 0, 4)
     }
   }
   "deflate" should {
