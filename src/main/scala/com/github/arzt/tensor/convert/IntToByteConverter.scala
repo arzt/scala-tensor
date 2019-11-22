@@ -1,6 +1,7 @@
 package com.github.arzt.tensor.convert
 
-import com.github.arzt.tensor.convert.Converter.readInt
+import com.github.arzt.tensor.convert.Converter.readLong
+import com.github.arzt.tensor.convert.Converter.writeLong
 
 class IntToByteConverter extends Converter[Int, Byte] {
 
@@ -9,8 +10,8 @@ class IntToByteConverter extends Converter[Int, Byte] {
   val n = 4
 
   def read(s: Int, i: Int): Byte =
-    readInt(8, s, n - i - 1).toByte
+    readLong(8, s, n - i - 1).toByte
 
   def write(s: Int, i: Int, t: Byte): Int =
-    Converter.writeInt(8, s, n - i - 1, t)
+    writeLong(8, s, n - i - 1, t).toInt
 }

@@ -1,7 +1,7 @@
 package com.github.arzt.tensor.convert
 
-import com.github.arzt.tensor.convert.Converter.readInt
-import com.github.arzt.tensor.convert.Converter.writeInt
+import com.github.arzt.tensor.convert.Converter.readLong
+import com.github.arzt.tensor.convert.Converter.writeLong
 
 class ShortToBooleanConverter extends Converter[Short, Boolean] {
 
@@ -10,8 +10,8 @@ class ShortToBooleanConverter extends Converter[Short, Boolean] {
   val zero = 0
 
   def read(s: Short, i: Int): Boolean =
-    (readInt(1, s, n - i + 1) & 1) == 1
+    (readLong(1, s, n - i - 1) & 1) == 1
 
   def write(s: Short, i: Int, t: Boolean): Short =
-    writeInt(1, s, n - i + 1, if (t) 1 else 0).toShort
+    writeLong(1, s, n - i - 1, if (t) 1 else 0).toShort
 }

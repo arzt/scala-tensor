@@ -1,7 +1,7 @@
 package com.github.arzt.tensor.convert
 
-import com.github.arzt.tensor.convert.Converter.readInt
-import com.github.arzt.tensor.convert.Converter.writeInt
+import com.github.arzt.tensor.convert.Converter.readLong
+import com.github.arzt.tensor.convert.Converter.writeLong
 
 class IntToShortConverter extends Converter[Int, Short] {
 
@@ -10,8 +10,8 @@ class IntToShortConverter extends Converter[Int, Short] {
   val n = 2
 
   def read(s: Int, i: Int): Short =
-    readInt(16, s, n - i - 1).toShort
+    readLong(16, s, n - i - 1).toShort
 
   def write(s: Int, i: Int, t: Short): Int =
-    writeInt(16, s, n - i - 1, t)
+    writeLong(16, s, n - i - 1, t).toInt
 }

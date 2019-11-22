@@ -1,7 +1,7 @@
 package com.github.arzt.tensor.convert
 
-import com.github.arzt.tensor.convert.Converter.readInt
-import com.github.arzt.tensor.convert.Converter.writeInt
+import com.github.arzt.tensor.convert.Converter.readLong
+import com.github.arzt.tensor.convert.Converter.writeLong
 
 class IntToBooleanConverter extends Converter[Int, Boolean] {
 
@@ -10,8 +10,8 @@ class IntToBooleanConverter extends Converter[Int, Boolean] {
   val zero = 0
 
   override def read(s: Int, i: Int): Boolean =
-    (readInt(1, s, n - i - 1) & 1) == 1
+    (readLong(1, s, n - i - 1) & 1) == 1
 
   override def write(s: Int, i: Int, t: Boolean): Int =
-    writeInt(1, s, n - i - 1, if (t) 1 else 0)
+    writeLong(1, s, n - i - 1, if (t) 1 else 0).toInt
 }

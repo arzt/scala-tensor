@@ -1,7 +1,7 @@
 package com.github.arzt.tensor.convert
 
-import com.github.arzt.tensor.convert.Converter.readInt
-import com.github.arzt.tensor.convert.Converter.writeInt
+import com.github.arzt.tensor.convert.Converter.readLong
+import com.github.arzt.tensor.convert.Converter.writeLong
 
 class ShortToByteConverter extends Converter[Short, Byte] {
 
@@ -10,8 +10,8 @@ class ShortToByteConverter extends Converter[Short, Byte] {
   val zero = 0
 
   def read(s: Short, i: Int): Byte =
-    readInt(8, s, n - i + 1).toByte
+    readLong(8, s, n - i - 1).toByte
 
   def write(s: Short, i: Int, t: Byte): Short =
-    writeInt(8, s, n - i + 1, t).toShort
+    writeLong(8, s, n - i - 1, t).toShort
 }

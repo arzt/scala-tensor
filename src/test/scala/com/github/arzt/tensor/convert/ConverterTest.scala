@@ -41,15 +41,26 @@ class ConverterTest extends Specification {
   "int byte converter" should {
     "converts int to bytes and vice versa" in {
       val converter = new IntToByteConverter
-      val r = new Random()
-      Range(0, 32)
+      val r = new Random(5)
+      Range(0, converter.n)
         .indices
         .map { i =>
           val source = r.nextInt()
           val target = r.nextBytes(1)(0)
           val written = converter.write(source, i, target)
-          converter.read(written, i) shouldEqual target
+          val readd = converter.read(written, i)
+          readd shouldEqual target
         }
+    }
+    "isolated case" in {
+      val converter = new IntToByteConverter
+
+      val i = 3
+      val source = 0
+      val target = 82: Byte
+      val written = converter.write(source, i, target)
+      val readd = converter.read(written, i)
+      readd shouldEqual target
     }
   }
   "byte boolean converter" should {

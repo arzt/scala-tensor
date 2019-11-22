@@ -12,11 +12,8 @@ trait Converter[S, T] {
 }
 
 object Converter {
-  def readLong(size: Int, s: Long, i: Int): Long = {
-    s >> (i * size)
-  }
 
-  def readInt(size: Int, s: Int, i: Int): Int = {
+  def readLong(size: Int, s: Long, i: Int): Long = {
     s >> (i * size)
   }
 
@@ -27,10 +24,4 @@ object Converter {
     s & zeros | tNew & ones
   }
 
-  def writeInt(size: Int, s: Int, i: Int, t: Int): Int = {
-    val ones = ((1 << size) - 1) << (i * size)
-    val zeros = ~ones
-    val tNew = t << (i * size)
-    s & zeros | tNew & ones
-  }
 }
