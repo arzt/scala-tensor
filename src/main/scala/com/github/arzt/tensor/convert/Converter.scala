@@ -9,6 +9,10 @@ trait Converter[S, T] {
   def read(s: S, i: Int): T
 
   def write(s: S, i: Int, t: T): S
+
+  @inline
+  final def toBigEndian(i: Int): Int =
+    n - i - 1
 }
 
 object Converter {

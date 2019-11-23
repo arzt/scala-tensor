@@ -10,8 +10,8 @@ class ShortToByteConverter extends Converter[Short, Byte] {
   val zero = 0
 
   def read(s: Short, i: Int): Byte =
-    readLong(8, s, n - i - 1).toByte
+    readLong(8, s, toBigEndian(i)).toByte
 
   def write(s: Short, i: Int, t: Byte): Short =
-    writeLong(8, s, n - i - 1, t).toShort
+    writeLong(8, s, toBigEndian(i), t).toShort
 }

@@ -10,8 +10,8 @@ class LongToShortConverter extends Converter[Long, Short] {
   val zero = 0
 
   override def read(a: Long, i: Int): Short =
-    readLong(16, a, n - i - 1).toShort
+    readLong(16, a, toBigEndian(i)).toShort
 
   override def write(a: Long, i: Int, t: Short): Long =
-    writeLong(16, a, n - i - 1, t)
+    writeLong(16, a, toBigEndian(i), t)
 }

@@ -10,8 +10,8 @@ class ShortToBooleanConverter extends Converter[Short, Boolean] {
   val zero = 0
 
   def read(s: Short, i: Int): Boolean =
-    (readLong(1, s, n - i - 1) & 1) == 1
+    (readLong(1, s, toBigEndian(i)) & 1) == 1
 
   def write(s: Short, i: Int, t: Boolean): Short =
-    writeLong(1, s, n - i - 1, if (t) 1 else 0).toShort
+    writeLong(1, s, toBigEndian(i), if (t) 1 else 0).toShort
 }

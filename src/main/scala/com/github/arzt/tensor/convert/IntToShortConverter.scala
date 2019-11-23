@@ -10,8 +10,8 @@ class IntToShortConverter extends Converter[Int, Short] {
   val n = 2
 
   def read(s: Int, i: Int): Short =
-    readLong(16, s, n - i - 1).toShort
+    readLong(16, s, toBigEndian(i)).toShort
 
   def write(s: Int, i: Int, t: Short): Int =
-    writeLong(16, s, n - i - 1, t).toInt
+    writeLong(16, s, toBigEndian(i), t).toInt
 }
