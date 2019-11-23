@@ -625,7 +625,7 @@ class TensorSpec extends Specification {
 
       val tensor = Array[Long](1,2,3,4)
         .asRow
-        .convert[Int]
+        .inflate[Int]
         .toSeq
 
       tensor shouldEqual Seq(0, 1, 0, 2, 0, 3, 0, 4)
@@ -633,10 +633,10 @@ class TensorSpec extends Specification {
   }
   "deflate" should {
     "deflate" in {
-      implicit  val c = new LongToIntConverter
+      implicit val c: LongToIntConverter = new LongToIntConverter
       def rand = Random.nextLong()
       val back = Array[Long](rand, rand, rand)
-      val tmp = back.asRow.convert[Int].apply()
+      val tmp = back.asRow.inflate[Int].apply()
       val tensor = tmp.deflate[Long]
       val long = tensor.toSeq
       long shouldEqual back.toSeq

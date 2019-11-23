@@ -4,8 +4,7 @@ import com.github.arzt.tensor.convert.Converter
 
 import scala.reflect.ClassTag
 
-class ConvertTensor[T, U](val shape: Seq[Int], val parent: Tensor[U], convert: Converter[U, T])(implicit val tag: ClassTag[T]) extends Tensor[T] {
-  //override val shape: Seq[Int] = parent.shape :+ convert.n
+class InflateTensor[T, U](val shape: Seq[Int], val parent: Tensor[U])(implicit val tag: ClassTag[T], val convert: Converter[U, T]) extends Tensor[T] {
 
   override def isView: Boolean = parent.isView
 

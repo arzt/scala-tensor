@@ -240,11 +240,11 @@ trait Tensor[T] {
       .apply()
   }
 
-  def convert[U: ClassTag](implicit converter: Converter[T, U]): Tensor[U] =
-    new ConvertTensor[U, T](shape.updated(shape.indices.last, shape.last * converter.n), this, converter)
+  def inflate[U: ClassTag](implicit converter: Converter[T, U]): Tensor[U] =
+    new InflateTensor[U, T](shape.updated(shape.indices.last, shape.last * converter.n), this)
 
   def deflate[U: ClassTag](implicit converter: Converter[U, T]): Tensor[U] =
-    new DeflateTensor[U, T](shape.updated(shape.indices.last, shape.last / converter.n), this, converter)
+    new DeflateTensor[U, T](shape.updated(shape.indices.last, shape.last / converter.n), this)
 
 }
 
@@ -269,8 +269,6 @@ private class ArrayTensor[T] private[tensor] (
     val shape: immutable.Seq[Int],
     val data: Array[T],
     val offset: Int = 0)(implicit val tag: ClassTag[T]) extends Tensor[T] {
-
-  //override val tag = tago
 
   override def apply(a: Int): T = data(offset + a)
 
