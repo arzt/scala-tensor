@@ -240,11 +240,20 @@ trait Tensor[T] {
       .apply()
   }
 
-  def inflate[U: ClassTag](implicit converter: Converter[T, U]): Tensor[U] =
-    new InflateTensor[U, T](shape.updated(shape.indices.last, shape.last * converter.n), this)
+  def inflate[U: ClassTag](implicit converter: Converter[T, U]): Tensor[U] = {
+    val newShape = shape.updated(shape.indices.last, shape.last * converter.n)
+    new InflateTensor[U, T](newShape, this)
+  }
 
-  def deflate[U: ClassTag](implicit converter: Converter[U, T]): Tensor[U] =
-    new DeflateTensor[U, T](shape.updated(shape.indices.last, shape.last / converter.n), this)
+  def deflate[U: ClassTag](implicit converter: Converter[U, T]): Tensor[U] = {
+    val d = shape.last
+    if (d % converter.n == 0) {
+      val newShape = shape.updated(shape.indices.last, d / converter.n)
+      new DeflateTensor[U, T](newShape, this)
+    } else {
+      throw new IllegalArgumentException(s"Last shape dimension is not divisible by ${converter.n}")
+    }
+  }
 
 }
 

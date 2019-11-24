@@ -641,5 +641,9 @@ class TensorSpec extends Specification {
       val long = tensor.toSeq
       long shouldEqual back.toSeq
     }
+    "throw exception if size is not compatible with type" in {
+      import convert.implicits.longToInt
+      Array(0).asRow().deflate[Long] should throwA[IllegalArgumentException]
+    }
   }
 }
