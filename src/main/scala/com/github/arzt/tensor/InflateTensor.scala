@@ -21,5 +21,4 @@ class InflateTensor[T, U](val shape: Seq[Int], val parent: Tensor[U])(implicit v
     parent.update(j, convert.write(parent(j), i, v))
   }
 
-  override def toSeq: Seq[T] = (0 until length).view.map(apply).toSeq
 }

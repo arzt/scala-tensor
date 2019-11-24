@@ -22,7 +22,6 @@ private class MergeTensor[T](
   override def update(i: Int, v: T): Unit =
     parent(parentMap(i))(childMap(i)) = v
 
-  override def toSeq: Seq[T] = (0 until length).map(apply)
 }
 
 object MergeTensor {

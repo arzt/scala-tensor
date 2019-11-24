@@ -137,7 +137,7 @@ class MergeTensorSpec extends Specification {
       val a6 = expected(1: Index, 1, 0)
       val a7 = expected(1: Index, 1, 1)
       val t = Array(a0, a1, a2, a3, a4, a5, a6, a7).asTensor(2, 2, 2)
-      val concat = t.concat()
+      val concat = t.concatenate()
       concat === expected
     }
     "horizontal non matching" in {
@@ -146,7 +146,7 @@ class MergeTensorSpec extends Specification {
         e(0: Index, 0), e(0, 1 :: 2),
         e(1, 0 :: 1), e(1: Index, 2))
         .asTensor(2, 2)
-        .concat()
+        .concatenate()
       r === e
     }
     "vertical matching" in {
@@ -155,7 +155,7 @@ class MergeTensorSpec extends Specification {
         e(0: Index, 0), e(0: Index, 1),
         e(1 :: 2, 0), e(1 :: 2, 1))
         .asTensor(2, 2)
-        .concat()
+        .concatenate()
       r === e
     }
     "vertical non matching shape" in {
@@ -192,7 +192,7 @@ class MergeTensorSpec extends Specification {
         e(1 :: 2, 0), e(2: Index, 1))
         .asTensor(2, 2)
       val r = value
-        .concat()
+        .concatenate()
       r === e
     }
     "simple 3D test" in {
@@ -202,7 +202,7 @@ class MergeTensorSpec extends Specification {
         e(1, 0, 0 :: 1), e(1: Index, 0, 2))
         .asTensor(2, 1, 2)
       val r = t
-        .concat()
+        .concatenate()
       e === r
     }
     "simple 3D test2" in {
@@ -214,7 +214,7 @@ class MergeTensorSpec extends Specification {
         e(1, 0 :: 1, 0), e(1: Index, 0, 1),
         e(1: Index, 2, 0), e(1: Index, 1 :: 2, 1))
         .asTensor(2, 2, 2)
-      val r = t.concat()
+      val r = t.concatenate()
       e === r
     }
 
@@ -228,7 +228,7 @@ class MergeTensorSpec extends Specification {
         e(1 :: 2, 0 :: 0, 1 :: 1))
         .asTensor(2, 1, 2)
       val shape = MergeTensor.getShape(t)
-      val r = t.concat()
+      val r = t.concatenate()
       r === e
     }
     "simpler simpler advanced 2D test" in {
@@ -241,7 +241,7 @@ class MergeTensorSpec extends Specification {
         e(0 :: 0, 1 :: 2, 1 :: 1))
         .asTensor(1, 2, 2)
       val shape = MergeTensor.getShape(t)
-      val r = t.concat()
+      val r = t.concatenate()
       r === e
     }
     "advanced 3D test" in skipped {
@@ -254,7 +254,7 @@ class MergeTensorSpec extends Specification {
         e(1 :: 2, 2 :: 2, 0 :: 0), e(1 :: 2, 2 :: 2, 1 :: 2))
         .asTensor(2, 2, 2)
       val r = t
-        .concat()
+        .concatenate()
       r === e
     }
   }

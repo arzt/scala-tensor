@@ -72,15 +72,6 @@ class TensorSpec extends Specification {
       val r = t(1 until 2, 1 until 2)
       r(0) === 5
     }
-    "have string representation" in skipped {
-      val strings = Array[String]("a", "th\nis", "is", "my\n   tes\n t").asRows(2)
-      val rep = strings.toString
-
-      val data = Array[Int](1, 2, 3, 4)
-      Tensor(data, 2, 2).toString mustEqual " 1 2\n 3 4\n"
-      Tensor(data, 4, 1).toString mustEqual " 1\n 2\n 3\n 4\n"
-      Tensor(data, 1, 4).toString mustEqual " 1 2 3 4\n"
-    }
     "equality" in {
       Array(1).asRow === Array(1).asRow
       Array(1).asRow !== Array(2).asRow
@@ -108,8 +99,9 @@ class TensorSpec extends Specification {
       val zeros = new Array[Int](8)
       val a = Tensor(data, 2, 4)
       val b = Tensor(zeros, 2, 4)
+      b !== a
       b := a
-      data.toSeq === zeros.toSeq
+      b === a
     }
     "update with tensor 1D" in {
       val a = Array(1, 0, 0, 4).asRow
@@ -133,7 +125,7 @@ class TensorSpec extends Specification {
       val expected = Seq(
         1, 2, 0, 0,
         0, 0, 1, 2)
-      data.toSeq === expected
+      t.toSeq === expected
     }
     "force" in {
       val data = Array[Int](
@@ -141,7 +133,7 @@ class TensorSpec extends Specification {
         0, 0, 0, 0)
       val t = Tensor(data, 2, 4)
       val t2 = t()
-      t2.toSeq === t.toSeq
+      t2 === t
     }
     "linear view" in {
       import TensorImplicits._
@@ -616,7 +608,7 @@ class TensorSpec extends Specification {
         2, 3,
         4, 5)
         .asRows(3)
-      result.concat() === exp
+      result.concatenate() === exp
     }
   }
   "inflate from long to int" should {
