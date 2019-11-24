@@ -57,8 +57,7 @@ class UnitDim(val n: Int, val dimIndices: Seq[Int]) extends Dim {
 class RecDim[K <: Dim](
   val n: Int,
   val dimIndices: Seq[Int],
-  child: K
-) extends Dim {
+  child: K) extends Dim {
 
   override val shape: List[Int] = dim :: child.shape
 

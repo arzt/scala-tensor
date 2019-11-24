@@ -619,11 +619,11 @@ class TensorSpec extends Specification {
       result.concat() === exp
     }
   }
-  "inflate from long to int" should  {
+  "inflate from long to int" should {
     "produce correct values" in {
       implicit val c = new LongToIntConverter
 
-      val tensor = Array[Long](1,2,3,4)
+      val tensor = Array[Long](1, 2, 3, 4)
         .asRow
         .inflate[Int]
         .toSeq

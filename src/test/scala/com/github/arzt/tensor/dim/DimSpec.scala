@@ -39,21 +39,21 @@ class DimSpec extends Specification {
       d === ArraySeq(0, 1, 2, 3, 4, 5)
     }
     "Recursive and sub seq 1" in {
-      val d = Dim(3, Seq(0,0,0), Dim(2))
+      val d = Dim(3, Seq(0, 0, 0), Dim(2))
       val dimList = List(3, 2)
       d.shape === dimList
       d.length === dimList.product
       d === ArraySeq(0, 1, 0, 1, 0, 1)
     }
     "Recursive and sub seq 2" in {
-      val d = Dim(3, Dim(1, Seq(0,0)))
+      val d = Dim(3, Dim(1, Seq(0, 0)))
       val dimList = List(3, 2)
       d.shape === dimList
       d.length === dimList.product
       d === ArraySeq(0, 0, 2, 2, 4, 4)
     }
     "test mod" in {
-      val d = Dim(3, Dim(1, Seq(0,0)))
+      val d = Dim(3, Dim(1, Seq(0, 0)))
       val result = d(Seq(0), _(Seq(3)))
       result === ArraySeq(0)
     }
