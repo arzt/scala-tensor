@@ -19,7 +19,7 @@ trait TensorMultiplication[T] {
 
 object JavaDoubleTensorMultiplication extends TensorMultiplication[Double] {
 
-  implicit val tag = implicitly[ClassTag[Double]]
+  implicit val tag = ClassTag.Double
 
   override def apply(a: Tensor[Double], b: Tensor[Double], c: ArrayTensor[Double]): Unit = {
     val n = a.shape.length
@@ -52,7 +52,7 @@ object JavaDoubleTensorMultiplication extends TensorMultiplication[Double] {
 
 object DoubleTensorMultiplication extends TensorMultiplication[Double] {
 
-  implicit val tag = implicitly[ClassTag[Double]]
+  implicit val tag = ClassTag.Double
 
   override def apply(a: Tensor[Double], b: Tensor[Double], c: ArrayTensor[Double]): Unit = {
     val n = a.shape.length
@@ -86,7 +86,7 @@ object DoubleTensorMultiplication extends TensorMultiplication[Double] {
 
 object FloatTensorMultiplication extends TensorMultiplication[Float] {
 
-  implicit val tag = implicitly[ClassTag[Float]]
+  implicit val tag = ClassTag.Float
 
   override def apply(a: Tensor[Float], b: Tensor[Float], c: ArrayTensor[Float]): Unit = {
     val n = a.shape.length
