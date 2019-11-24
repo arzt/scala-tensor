@@ -6,7 +6,7 @@ import com.github.arzt.tensor.op.TensorMultiplication
 import scala.collection.immutable
 import scala.reflect.ClassTag
 
-trait Tensor[T] {
+trait Tensor[T] extends collection.Seq[T] {
 
   def toDouble(implicit n: Numeric[T]): Tensor[Double] = this.map(x => n.toDouble(x))
 
@@ -42,7 +42,7 @@ trait Tensor[T] {
   def apply(b: Index, a: Index): Tensor[T] = {
     val u = b(shape(0))
     val v = a(shape(1))
-    val mapping = indices(stride, u, v)
+    val mapping = getIndices(stride, u, v)
     new ViewTensor(Vector(u.size, v.size), this, mapping)
   }
 
@@ -50,7 +50,7 @@ trait Tensor[T] {
     val sa = c(shape(0))
     val sb = b(shape(1))
     val sc = a(shape(2))
-    val mapping = indices(stride, sa, sb, sc)
+    val mapping = getIndices(stride, sa, sb, sc)
     new ViewTensor(Vector(sa.length, sb.length, sc.length), this, mapping)
   }
 
@@ -59,7 +59,7 @@ trait Tensor[T] {
     val sc = c(shape(1))
     val sb = b(shape(2))
     val sa = a(shape(3))
-    val mapping = indices(stride, sd, sc, sb, sa)
+    val mapping = getIndices(stride, sd, sc, sb, sa)
     new ViewTensor(Vector(sd.length, sc.length, sb.length, sa.length), this, mapping)
   }
 
@@ -78,36 +78,6 @@ trait Tensor[T] {
   def update(c: Index, b: Index, a: Index, that: Tensor[T]): Unit = apply(c, b, a)() = that
 
   def :=(that: Tensor[T]): Unit = this() = that
-
-  override def toString: String = {
-    /*
-    val split = this.map(_.toString.split('\n'))
-    val maxHeight = split.toSeq.map(_.length).max
-    val maxWidth = split.toSeq.map(_.map(_.length).max).max
-    val string = split
-      .map {
-        x =>
-          {
-            val t = Tensor[Char](maxHeight, maxWidth + 1)
-            val xs = x.toString.split('\n')
-            val cs = Array.fill[Char]((maxWidth + 1) * maxWidth)(' ')
-            val strRep = x.toString
-            (0 until strRep.length)
-              .foreach { i =>
-                cs(i + 1) = strRep.charAt(i)
-              }
-            cs
-          }
-      }
-      .apply()
-    val tap = string.toSeq.sliding(cols, cols).map(x => x.reduce(_ ++ _) :+ '\n')
-      .reduce(_ ++ _)
-    new String(tap)
-    * */
-    val shapeStr = shape.mkString("[", " ", "]")
-    val valuesStr = toSeq.take(30).mkString("[", " ", "]")
-    s"Tensor(n=$length, shape=$shapeStr, values=$valuesStr)"
-  }
 
   def combine[B, R: ClassTag](that: Tensor[B], f: (T, B) => R): Tensor[R] = new CombineTensor[R, T, B](this, that, f)
 
@@ -221,7 +191,7 @@ trait Tensor[T] {
           .foreach { i =>
             is(i) = 0 until shape(i)
           }
-        val mapping = indices(stride, is.toSeq: _*)
+        val mapping = getIndices(stride, is.toSeq: _*)
         new ViewTensor(childShape, this, mapping): Tensor[T]
       }
       .apply()
@@ -241,6 +211,8 @@ trait Tensor[T] {
       throw new IllegalArgumentException(s"Last shape dimension is not divisible by ${converter.n}")
     }
   }
+
+  override def iterator: Iterator[T] = (0 until length).iterator.map(x => apply(x))
 
 }
 
@@ -275,6 +247,8 @@ private class ArrayTensor[T] private[tensor] (
   override def toSeq: Seq[T] = data.slice(offset, length + offset).toSeq
 
   override def isView = false
+
+  override def iterator: Iterator[T] = data.iterator.slice(offset, data.length)
 }
 
 private class CombineTensor[T, A, B](ta: Tensor[A], tb: Tensor[B], f: (A, B) => T)(implicit val tag: ClassTag[T]) extends Tensor[T] {
@@ -285,8 +259,6 @@ private class CombineTensor[T, A, B](ta: Tensor[A], tb: Tensor[B], f: (A, B) => 
   override def isView: Boolean = true
 
   override def apply(a: Int): T = f(ta(a), tb(a))
-
-  override def toSeq: Seq[T] = (0 until ta.length).view.map(apply).toArray.toSeq
 
   override def update(a: Int, v: T): Unit =
     throw new UnsupportedOperationException("Update not supported on combined tensor view, call apply first")
@@ -311,8 +283,6 @@ private class ViewTensor[T](val shape: immutable.Seq[Int], val tensor: Tensor[T]
 
   override def update(i: Int, v: T): Unit = tensor.update(map(i), v)
 
-  override def toSeq: Seq[T] = (0 until length).map(apply)
-
   override def isView: Boolean = true
 
 }
@@ -327,7 +297,6 @@ private class ReshapeTensor[T](val shape: immutable.Seq[Int], val tensor: Tensor
 
   override def update(i: Int, v: T): Unit = tensor(i) = v
 
-  override def toSeq: Seq[T] = (0 until length).map(apply)
 }
 
 class EchoTensor(val shape: immutable.Seq[Int]) extends Tensor[Int] {
@@ -359,7 +328,6 @@ private class IndexTensor(val shape: immutable.Seq[Int]) extends Tensor[Seq[Int]
   override def update(a: Int, v: Seq[Int]): Unit =
     throw new UnsupportedOperationException("Update not supported on IndexTensor, call apply() first")
 
-  override def toSeq: Seq[Seq[Int]] = (0 until length).map(apply)
 }
 
 object IndexTensor {
