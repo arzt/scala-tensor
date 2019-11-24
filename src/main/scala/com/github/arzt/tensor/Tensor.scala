@@ -14,13 +14,11 @@ trait Tensor[T] {
 
   require(shape.forall(_ >= 0), "Tensor dimensions must be greater or equal to zero")
 
-  def rank: Int = shape.length
-
   val length: Int = shape.product
 
   protected val stride: Array[Int] = toStride(shape.toArray)
 
-  lazy val rows: Int = shape(rank - 2)
+  lazy val rows: Int = shape(shape.length - 2)
 
   lazy val cols: Int = shape.last
 
@@ -34,17 +32,7 @@ trait Tensor[T] {
 
   def apply(a: Int): T
 
-  def apply(b: Int, a: Int): T = apply(index(stride, b, a))
-
-  def apply(c: Int, b: Int, a: Int): T = apply(index(stride, c, b, a))
-
-  def apply(d: Int, c: Int, b: Int, a: Int): T = apply(index(stride, d, c, b, a))
-
   def update(a: Int, v: T): Unit // = throw new UnsupportedOperationException("Update not possible on view")
-
-  def update(b: Int, a: Int, v: T): Unit = this(index(stride, b, a)) = v
-
-  def update(c: Int, b: Int, a: Int, v: T): Unit = this(index(stride, c, b, a)) = v
 
   def apply(a: Index): Tensor[T] = {
     val sa = a(shape(0))
