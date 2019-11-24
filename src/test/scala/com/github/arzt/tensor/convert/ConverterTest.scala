@@ -52,16 +52,6 @@ class ConverterTest extends Specification {
           readd shouldEqual target
         }
     }
-    "isolated case" in {
-      val converter = new IntToByteConverter
-
-      val i = 3
-      val source = 0
-      val target = 82: Byte
-      val written = converter.write(source, i, target)
-      val readd = converter.read(written, i)
-      readd shouldEqual target
-    }
   }
   "byte boolean converter" should {
     "converts byte to booleans and vice versa" in {
