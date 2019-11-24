@@ -14,4 +14,5 @@ class IntToBooleanConverter extends Converter[Int, Boolean] {
 
   override def write(s: Int, i: Int, t: Boolean): Int =
     writeLong(1, s, toBigEndian(i), if (t) 1 else 0).toInt
+
 }

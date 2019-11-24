@@ -14,4 +14,5 @@ class IntToShortConverter extends Converter[Int, Short] {
 
   def write(s: Int, i: Int, t: Short): Int =
     writeLong(16, s, toBigEndian(i), t).toInt
+
 }

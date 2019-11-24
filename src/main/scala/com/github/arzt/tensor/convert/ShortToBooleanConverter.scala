@@ -14,4 +14,5 @@ class ShortToBooleanConverter extends Converter[Short, Boolean] {
 
   def write(s: Short, i: Int, t: Boolean): Short =
     writeLong(1, s, toBigEndian(i), if (t) 1 else 0).toShort
+
 }

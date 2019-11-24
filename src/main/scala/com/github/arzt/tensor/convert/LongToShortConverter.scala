@@ -14,4 +14,5 @@ class LongToShortConverter extends Converter[Long, Short] {
 
   override def write(a: Long, i: Int, t: Short): Long =
     writeLong(16, a, toBigEndian(i), t)
+
 }

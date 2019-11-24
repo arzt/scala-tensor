@@ -14,4 +14,5 @@ class ByteToBooleanConverter extends Converter[Byte, Boolean] {
 
   override def write(s: Byte, i: Int, t: Boolean): Byte =
     writeLong(1, s, toBigEndian(i), if (t) 1 else 0).toByte
+
 }

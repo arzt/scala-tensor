@@ -18,7 +18,7 @@ trait Tensor[T] {
 
   def rank: Int = shape.length
 
-  def length: Int = shape.product
+  val length: Int = shape.product
 
   protected val stride: Array[Int] = toStride(shape.toArray)
 

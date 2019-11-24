@@ -14,4 +14,5 @@ class IntToByteConverter extends Converter[Int, Byte] {
 
   def write(s: Int, i: Int, t: Byte): Int =
     writeLong(8, s, toBigEndian(i), t).toInt
+
 }

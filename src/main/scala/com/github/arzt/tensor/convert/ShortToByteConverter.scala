@@ -14,4 +14,5 @@ class ShortToByteConverter extends Converter[Short, Byte] {
 
   def write(s: Short, i: Int, t: Byte): Short =
     writeLong(8, s, toBigEndian(i), t).toShort
+
 }

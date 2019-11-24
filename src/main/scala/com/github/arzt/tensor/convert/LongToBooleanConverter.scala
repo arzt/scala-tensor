@@ -14,4 +14,5 @@ class LongToBooleanConverter extends Converter[Long, Boolean] {
 
   def write(s: Long, i: Int, t: Boolean): Long =
     writeLong(1, s, toBigEndian(i), if (t) 1 else 0)
+
 }
