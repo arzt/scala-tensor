@@ -16,28 +16,28 @@ class TensorSpec extends Specification {
       t1(0) === 0
       t1(4) === 4
       t1(7) === 7
-      t1(0, 0) === 0
-      t1(1, 1) === 5
-      t1(1, 3) === 7
-      t1(1, 1) === 5
-      t2(0, 0, 0) === 0
-      t2(0, 0, 1) === 1
-      t2(0, 1, 0) === 2
-      t2(0, 1, 1) === 3
-      t2(1, 1, 1) === 7
+      t1(0, 0)(0) === 0
+      t1(1, 1)(0) === 5
+      t1(1, 3)(0) === 7
+      t1(1, 1)(0) === 5
+      t2(0, 0, 0)(0) === 0
+      t2(0, 0, 1)(0) === 1
+      t2(0, 1, 0)(0) === 2
+      t2(0, 1, 1)(0) === 3
+      t2(1, 1, 1)(0) === 7
     }
     "tensor with offset" in {
       val t = Tensor(1, Array(1, 2, 3), 1, 1)
-      t(0, 0) === 2
-      t.apply(0, 1) === 3
+      t(0, 0)(0) === 2
+      t(0, 1)(0) === 2
     }
     "tensor with data" in {
       val t = Tensor(Array(1))
-      t(0, 0) === 1
+      t(0) === 1
     }
     "tesor with data and offset" in {
       val t = Tensor(1, Array(1, 2))
-      t(0, 0) === 2
+      t(0) === 2
     }
     "read 4d tensor" in {
       val t = Array[Int](
@@ -47,9 +47,9 @@ class TensorSpec extends Specification {
         7, 8)
         .asTensor(2, 2, 1, 2)
       val b = t(::, ::, ::, ::).apply()
-      t(0, 0, 0, 0) === 1
-      t(0, 1, 0, 1) === 4
-      t(1, 1, 0, 1) === 8
+      t(0, 0, 0, 0)(0) === 1
+      t(0, 1, 0, 1)(0) === 4
+      t(1, 1, 0, 1)(0) === 8
       b === t
     }
     "update elements by index" in {
@@ -61,11 +61,11 @@ class TensorSpec extends Specification {
       t(0) = 7
       t(0) === 7
       val t1 = Tensor(data, 3, 4)
-      t1(2, 3) = 8
-      t1(2, 3) === 8
+      t1(2, 3)(0) = 8
+      t1(2, 3)(0) === 8
       val t2 = Tensor(data, 2, 3, 2)
-      t2(0, 1, 1) = -5
-      t2(0, 1, 1) === -5
+      t2(0, 1, 1) = Tensor(Array(-5.0))
+      t2(0, 1, 1)(0) === -5.0
     }
     "read indexed data" in {
       val t = Tensor(Array(1, 2, 3, 4, 5, 6, 7, 8, 9), 3, 3)
@@ -192,9 +192,9 @@ class TensorSpec extends Specification {
     }
     "mapping" in {
       val t = Array(1).asRow.map(_.toString)
-      t(0, 0) === "1"
+      t(0) === "1"
       t.isView === true
-      (t(0, 0) = "test") must throwA[UnsupportedOperationException]
+      (t(0) = Tensor(Array("test"))) must throwA[UnsupportedOperationException]
     }
     "support addition" in {
       val t = Tensor(Array(1, 2, 3, 4, 5, 6, 7, 8, 9))
