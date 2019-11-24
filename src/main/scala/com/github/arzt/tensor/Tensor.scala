@@ -131,7 +131,7 @@ trait Tensor[T] {
 
   def toSeq: Seq[T]
 
-  def **(b: Tensor[T])(implicit m: TensorMultiplication[T], tag: ClassTag[T]): Tensor[T] = {
+  def **(b: Tensor[T])(implicit m: TensorMultiplication[T]): Tensor[T] = {
     val n = this.shape.length
     val outShape = this.shape.updated(n - 1, b.shape.last)
     val C = new Array[T](outShape.product)
