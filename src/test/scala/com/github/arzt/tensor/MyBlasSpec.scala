@@ -1,8 +1,7 @@
 package com.github.arzt.tensor
 
+import com.github.arzt.tensor.TensorImplicits._
 import org.specs2.mutable.Specification
-import TensorImplicits._
-import com.github.arzt.tensor.op.JavaDoubleTensorMultiplication
 
 class MyBlasSpec extends Specification {
 
@@ -27,8 +26,6 @@ class MyBlasSpec extends Specification {
       val bt = b.asTensor(3, 2)
 
       val ct = at ** bt
-
-      val dt = (at ** bt)(JavaDoubleTensorMultiplication)
 
       MyBLAS.dgemmJava('n', 'n', m, n, k, a, ao, b, bo, c, co)
       val c2t = c.asTensor(2, 2)

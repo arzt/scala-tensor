@@ -8,8 +8,6 @@ import scala.reflect.ClassTag
 
 trait Tensor[T] {
 
-  implicit val tag: ClassTag[T]
-
   def toDouble(implicit n: Numeric[T]): Tensor[Double] = this.map(x => n.toDouble(x))
 
   def shape: immutable.Seq[Int]
@@ -133,7 +131,7 @@ trait Tensor[T] {
 
   def toSeq: Seq[T]
 
-  def **(b: Tensor[T])(implicit m: TensorMultiplication[T]): Tensor[T] = {
+  def **(b: Tensor[T])(implicit m: TensorMultiplication[T], tag: ClassTag[T]): Tensor[T] = {
     val n = this.shape.length
     val outShape = this.shape.updated(n - 1, b.shape.last)
     val C = new Array[T](outShape.product)
@@ -166,7 +164,7 @@ trait Tensor[T] {
       pi(n - 1) = tmp
       val newShape = shape.indices.map(pi andThen shape)
       val mapping = permuteMapping(pi, stride, newShape)
-      new TransposeTensor[T](newShape, this, mapping)(tag)
+      new TransposeTensor[T](newShape, this, mapping)
     }
   }
 
@@ -318,33 +316,32 @@ private class MapTensor[T, R](tensor: Tensor[T], f: T => R)(implicit val tag: Cl
     throw new UnsupportedOperationException("Update not supported on mapped tensor view, call apply first")
 }
 
-private class ViewTensor[T](val shape: immutable.Seq[Int], val tensor: Tensor[T], map: Int => Int)(implicit val tag: ClassTag[T]) extends Tensor[T] {
+private class ViewTensor[T](val shape: immutable.Seq[Int], val tensor: Tensor[T], map: Int => Int) extends Tensor[T] {
 
   override def apply(i: Int): T = tensor(map(i))
 
   override def update(i: Int, v: T): Unit = tensor.update(map(i), v)
 
-  override def toSeq: Seq[T] = (0 until length).map(apply).toArray.toSeq
+  override def toSeq: Seq[T] = (0 until length).map(apply)
 
   override def isView: Boolean = true
 
 }
 
-private class TransposeTensor[T](shape: immutable.Seq[Int], tensor: Tensor[T], map: Int => Int)(override implicit val tag: ClassTag[T])
+private class TransposeTensor[T](shape: immutable.Seq[Int], tensor: Tensor[T], map: Int => Int)
   extends ViewTensor[T](shape, tensor, map)
 
-private class ReshapeTensor[T](val shape: immutable.Seq[Int], val tensor: Tensor[T])(implicit val tag: ClassTag[T]) extends Tensor[T] {
+private class ReshapeTensor[T](val shape: immutable.Seq[Int], val tensor: Tensor[T]) extends Tensor[T] {
   override def isView: Boolean = true
 
   override def apply(i: Int): T = tensor(i)
 
   override def update(i: Int, v: T): Unit = tensor(i) = v
 
-  override def toSeq: Seq[T] = (0 until length).view.map(apply).toArray.toSeq
+  override def toSeq: Seq[T] = (0 until length).map(apply)
 }
 
 class EchoTensor(val shape: immutable.Seq[Int]) extends Tensor[Int] {
-  override implicit val tag: ClassTag[Int] = implicitly[ClassTag[Int]]
 
   override def isView: Boolean = true
 
@@ -361,7 +358,6 @@ object EchoTensor {
 }
 
 private class IndexTensor(val shape: immutable.Seq[Int]) extends Tensor[Seq[Int]] {
-  override implicit val tag: ClassTag[Seq[Int]] = implicitly[ClassTag[Seq[Int]]]
 
   override def isView: Boolean = false
 
