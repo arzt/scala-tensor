@@ -1,6 +1,7 @@
 package com.github.arzt.tensor
 
 import com.github.arzt.tensor.TensorImplicits._
+import com.github.arzt.tensor.convert.LongToIntConverter
 import org.specs2.mutable.Specification
 
 import scala.util.Random
@@ -171,12 +172,12 @@ class TensorSpec extends Specification {
       val t = Tensor(Array(1, 2, 3))
       t.toSeq === Seq(1, 2, 3)
     }
-    "get nrows and ncols" in {
+    "read nrows and ncols" in {
       val t = Tensor(3, 4)
       t.cols === 4
       t.rows === 3
     }
-    "get isMatrix isVector" in {
+    "read isMatrix isVector" in {
       val vec = Tensor(4)
       vec.isMatrix === false
       vec.isVector === true
@@ -616,6 +617,33 @@ class TensorSpec extends Specification {
         4, 5)
         .asRows(3)
       result.concat() === exp
+    }
+  }
+  "inflate from long to int" should  {
+    "produce correct values" in {
+      implicit val c = new LongToIntConverter
+
+      val tensor = Array[Long](1,2,3,4)
+        .asRow
+        .inflate[Int]
+        .toSeq
+
+      tensor shouldEqual Seq(0, 1, 0, 2, 0, 3, 0, 4)
+    }
+  }
+  "deflate" should {
+    "deflate" in {
+      implicit val c: LongToIntConverter = new LongToIntConverter
+      def rand = Random.nextLong()
+      val back = Array[Long](rand, rand, rand)
+      val tmp = back.asRow.inflate[Int].apply()
+      val tensor = tmp.deflate[Long]
+      val long = tensor.toSeq
+      long shouldEqual back.toSeq
+    }
+    "throw exception if size is not compatible with type" in {
+      import convert.implicits.longToInt
+      Array(0).asRow().deflate[Long] should throwA[IllegalArgumentException]
     }
   }
 }

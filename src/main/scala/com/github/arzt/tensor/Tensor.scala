@@ -1,5 +1,6 @@
 package com.github.arzt.tensor
 
+import com.github.arzt.tensor.convert.Converter
 import com.github.arzt.tensor.op.TensorMultiplication
 
 import scala.collection.immutable
@@ -13,7 +14,7 @@ trait Tensor[T] {
 
   def shape: immutable.Seq[Int]
 
-  require(shape.forall(_ > 0), "Tensor dimensions must be greater than zero")
+  require(shape.forall(_ >= 0), "Tensor dimensions must be greater or equal to zero")
 
   def rank: Int = shape.length
 
@@ -239,6 +240,21 @@ trait Tensor[T] {
       .apply()
   }
 
+  def inflate[U: ClassTag](implicit converter: Converter[T, U]): Tensor[U] = {
+    val newShape = shape.updated(shape.indices.last, shape.last * converter.n)
+    new InflateTensor[U, T](newShape, this)
+  }
+
+  def deflate[U: ClassTag](implicit converter: Converter[U, T]): Tensor[U] = {
+    val d = shape.last
+    if (d % converter.n == 0) {
+      val newShape = shape.updated(shape.indices.last, d / converter.n)
+      new DeflateTensor[U, T](newShape, this)
+    } else {
+      throw new IllegalArgumentException(s"Last shape dimension is not divisible by ${converter.n}")
+    }
+  }
+
 }
 
 object Tensor {
@@ -262,8 +278,6 @@ private class ArrayTensor[T] private[tensor] (
     val shape: immutable.Seq[Int],
     val data: Array[T],
     val offset: Int = 0)(implicit val tag: ClassTag[T]) extends Tensor[T] {
-
-  //override val tag = tago
 
   override def apply(a: Int): T = data(offset + a)
 
