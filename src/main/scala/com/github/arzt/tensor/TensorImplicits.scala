@@ -80,7 +80,7 @@ object TensorImplicits {
   }
 
   implicit class ConcatOps[T: ClassTag](tensor: Tensor[Tensor[T]]) {
-    def concat(): Tensor[T] = {
+    def concatenate(): Tensor[T] = {
       val shape = MergeTensor.getShape[T](tensor)
       val (parentMap, childMap) = MergeTensor.getParentAndChildMap[T](tensor, shape)
       new MergeTensor[T](shape, tensor, parentMap, childMap)
