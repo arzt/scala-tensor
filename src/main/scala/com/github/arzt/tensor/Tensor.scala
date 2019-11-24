@@ -34,8 +34,6 @@ trait Tensor[T] {
 
   def apply(a: Int): T
 
-  def apply(b: Int, a: Int): T = apply(index(stride, b, a))
-
   def apply(c: Int, b: Int, a: Int): T = apply(index(stride, c, b, a))
 
   def apply(d: Int, c: Int, b: Int, a: Int): T = apply(index(stride, d, c, b, a))
