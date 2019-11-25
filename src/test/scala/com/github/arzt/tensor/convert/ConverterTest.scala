@@ -28,11 +28,13 @@ class ConverterTest extends Specification {
     "convert long to bytes and vice versa" in {
       val converter = new LongToByteConverter
       val r = new Random()
+      val buf = Array[Byte](1)
       Range(0, 8)
         .indices
         .map { i =>
           val randLong = r.nextLong()
-          val value = r.nextBytes(1)(0)
+          r.nextBytes(buf)
+          val value = buf(0)
           val written = converter.write(randLong, i, value)
           converter.read(written, i) shouldEqual value
         }
@@ -42,11 +44,13 @@ class ConverterTest extends Specification {
     "converts int to bytes and vice versa" in {
       val converter = new IntToByteConverter
       val r = new Random(5)
+      val buf = Array[Byte](1)
       Range(0, converter.n)
         .indices
         .map { i =>
           val source = r.nextInt()
-          val target = r.nextBytes(1)(0)
+          r.nextBytes(buf)
+          val target = buf(0)
           val written = converter.write(source, i, target)
           val readd = converter.read(written, i)
           readd shouldEqual target
@@ -57,10 +61,12 @@ class ConverterTest extends Specification {
     "converts byte to booleans and vice versa" in {
       val converter = new ByteToBooleanConverter
       val r = new Random(4)
+      val buf = Array[Byte](1)
       Range(0, 1)
         .indices
         .map { i =>
-          val source = r.nextBytes(1)(0)
+          r.nextBytes(buf)
+          val source = buf(0)
           val value = r.nextInt() % 2 != 0
           val written = converter.write(source, i, value)
           val result = converter.read(written, i)

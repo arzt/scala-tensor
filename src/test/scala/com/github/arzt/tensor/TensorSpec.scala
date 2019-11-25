@@ -5,6 +5,7 @@ import com.github.arzt.tensor.convert.LongToIntConverter
 import org.specs2.mutable.Specification
 
 import scala.util.Random
+import scala.collection.immutable.Seq
 
 class TensorSpec extends Specification {
   "Tensors" should {
@@ -76,6 +77,8 @@ class TensorSpec extends Specification {
       Array(1).asRow === Array(1).asRow
       Array(1).asRow !== Array(2).asRow
       Array(1).asRow !== 4
+      Array(1, 2, 3).asRow === Array(1, 2, 3).asCol
+      Array(1, 2, 3, 4).asRows(1) !== Array(1, 2, 3, 4).asRows(2)
     }
     "as matrix by number of cols" in {
       val a = Array(1, 2, 3).asCols(3)
@@ -125,7 +128,7 @@ class TensorSpec extends Specification {
       val expected = Seq(
         1, 2, 0, 0,
         0, 0, 1, 2)
-      t.toSeq === expected
+      t.sameElements(expected)
     }
     "force" in {
       val data = Array[Int](
@@ -137,11 +140,11 @@ class TensorSpec extends Specification {
     }
     "linear view" in {
       import TensorImplicits._
-      val view = Array[Int](1, 2, 3, 4, 5, 6)
+      val tensor = Array[Int](1, 2, 3, 4, 5, 6)
         .asTensor(2, 3)
-        .apply(0 to 1, 1 to 1)
-        .toSeq
-      view === Seq(2, 5)
+        .apply(0 to 1, 1)
+
+      tensor.sameElements(Seq(2, 5))
     }
     "equal" in {
       val a = Tensor(Array(1, 2, 3), 3)
@@ -162,7 +165,7 @@ class TensorSpec extends Specification {
     }
     "create vector" in {
       val t = Tensor(Array(1, 2, 3))
-      t.toSeq === Seq(1, 2, 3)
+      t.sameElements(Seq(1, 2, 3))
     }
     "read nrows and ncols" in {
       val t = Tensor(3, 4)
@@ -179,7 +182,7 @@ class TensorSpec extends Specification {
     }
     "support stepped indexing" in {
       val t = Tensor(Array(0, 1, 2, 3, 4, 5, 6, 7, 8))
-      t(1 until 8 by 3).toSeq === Seq(1, 4, 7)
+      t(1 until 8 by 3).sameElements(Seq(1, 4, 7))
       t(::).isView === true
     }
     "mapping" in {
@@ -191,7 +194,7 @@ class TensorSpec extends Specification {
     "support addition" in {
       val t = Tensor(Array(1, 2, 3, 4, 5, 6, 7, 8, 9))
       val h = t + 4
-      h.toSeq === Array(1, 2, 3, 4, 5, 6, 7, 8, 9).map(_ + 4).toSeq
+      h.sameElements(Array(1, 2, 3, 4, 5, 6, 7, 8, 9).map(_ + 4))
     }
     "reassignment" in {
       val res = Array(0, 0, 0, 0)
@@ -422,7 +425,7 @@ class TensorSpec extends Specification {
           27, 18, 9)
           .asRows(3)
       c === expected
-      d.shape === collection.immutable.Seq(3, 3)
+      d.shape === Seq(3, 3)
     }
     "mmul2" in {
       val a =
@@ -610,6 +613,10 @@ class TensorSpec extends Specification {
         .asRows(3)
       result.concatenate() === exp
     }
+    "to array" in {
+      val values = Array(1, 2, 3, 4)
+      values.asRows(2).toArray.sameElements(values)
+    }
   }
   "inflate from long to int" should {
     "produce correct values" in {
@@ -618,9 +625,8 @@ class TensorSpec extends Specification {
       val tensor = Array[Long](1, 2, 3, 4)
         .asRow
         .inflate[Int]
-        .toSeq
 
-      tensor shouldEqual Seq(0, 1, 0, 2, 0, 3, 0, 4)
+      tensor.sameElements(Seq(0, 1, 0, 2, 0, 3, 0, 4))
     }
   }
   "deflate" should {
@@ -630,8 +636,8 @@ class TensorSpec extends Specification {
       val back = Array[Long](rand, rand, rand)
       val tmp = back.asRow.inflate[Int].apply()
       val tensor = tmp.deflate[Long]
-      val long = tensor.toSeq
-      long shouldEqual back.toSeq
+      val long = tensor
+      long.sameElements(back)
     }
     "throw exception if size is not compatible with type" in {
       import convert.implicits.longToInt
