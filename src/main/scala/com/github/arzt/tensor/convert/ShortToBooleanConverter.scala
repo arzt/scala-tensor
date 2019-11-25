@@ -7,7 +7,7 @@ class ShortToBooleanConverter extends Converter[Short, Boolean] {
 
   val n = 16
 
-  val zero = 0
+  val zero: Short = 0
 
   def read(s: Short, i: Int): Boolean =
     (readLong(1, s, toBigEndian(i)) & 1) == 1

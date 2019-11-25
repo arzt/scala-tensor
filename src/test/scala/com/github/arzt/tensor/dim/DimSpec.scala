@@ -2,7 +2,7 @@ package com.github.arzt.tensor.dim
 
 import org.specs2.mutable.Specification
 
-import scala.collection.immutable.ArraySeq
+import scala.collection.compat.immutable.ArraySeq
 
 class DimSpec extends Specification {
   "Dimension" should {

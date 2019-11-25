@@ -3,6 +3,7 @@ package com.github.arzt.tensor
 import com.github.arzt.tensor.op.DoubleTensorMultiplication
 import com.github.arzt.tensor.op.FloatTensorMultiplication
 
+import scala.collection.compat.immutable.ArraySeq
 import scala.language.implicitConversions
 import scala.languageFeature.implicitConversions
 import scala.reflect.ClassTag
@@ -106,11 +107,11 @@ object TensorImplicits {
       Range.inclusive(fromNorm, toNorm, by)
     }
 
-  implicit def intTensorToIndex(t: Tensor[Int]): Index = t.toSeq
+  implicit def intTensorToIndex(t: Tensor[Int]): Index =
+    _ => t.toArray
 
-  implicit def boolTensorToIndex(t: Tensor[Boolean]): Index = t.toSeq
-
-  //implicit def to[T](in: Tensor[T]): T = in.apply(0)
+  implicit def boolTensorToIndex(t: Tensor[Boolean]): Index =
+    _ => ArraySeq((0 until t.length).filter(t.apply): _*)
 
   val $colon$colon: Index = dimSize => 0 until dimSize
 
