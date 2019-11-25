@@ -7,7 +7,7 @@ class LongToByteConverter extends Converter[Long, Byte] {
 
   val n = 8
 
-  val zero = 0
+  val zero = 0L
 
   def read(s: Long, i: Int): Byte =
     readLong(8, s, toBigEndian(i)).toByte

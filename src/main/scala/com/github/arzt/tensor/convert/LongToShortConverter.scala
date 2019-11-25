@@ -7,7 +7,7 @@ class LongToShortConverter extends Converter[Long, Short] {
 
   val n = 4
 
-  val zero = 0
+  val zero = 0L
 
   override def read(a: Long, i: Int): Short =
     readLong(16, a, toBigEndian(i)).toShort

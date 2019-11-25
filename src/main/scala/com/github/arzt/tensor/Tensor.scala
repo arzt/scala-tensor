@@ -3,14 +3,15 @@ package com.github.arzt.tensor
 import com.github.arzt.tensor.convert.Converter
 import com.github.arzt.tensor.op.TensorMultiplication
 
-import scala.collection.immutable
+import scala.collection.compat.immutable.ArraySeq
+import scala.collection.immutable.Seq
 import scala.reflect.ClassTag
 
-trait Tensor[T] extends collection.Seq[T] {
+trait Tensor[T] {
 
   def toDouble(implicit n: Numeric[T]): Tensor[Double] = this.map(x => n.toDouble(x))
 
-  def shape: immutable.Seq[Int]
+  def shape: Seq[Int]
 
   require(shape.forall(_ >= 0), "Tensor dimensions must be greater or equal to zero")
 
@@ -28,7 +29,7 @@ trait Tensor[T] extends collection.Seq[T] {
 
   def isView: Boolean
 
-  def apply()(implicit tag: ClassTag[T]): Tensor[T] = new ArrayTensor[T](shape, toSeq.toArray, 0)
+  def apply()(implicit tag: ClassTag[T]): Tensor[T] = new ArrayTensor[T](shape, toIterable.toArray, 0)
 
   def apply(a: Int): T
 
@@ -87,7 +88,22 @@ trait Tensor[T] extends collection.Seq[T] {
 
   def !=(a: T): Tensor[Boolean] = this.map(_ != a)
 
-  def toSeq: Seq[T]
+  def toIterable: Iterable[T] = (0 until length).view.map(this.apply)
+
+  def fillArray(a: Array[T], offset: Int = 0): Array[T] = {
+    var i = 0
+    while (i < length) {
+      a(i + offset) = this(i)
+      i += 1
+    }
+    a
+  }
+
+  def toArray(implicit tag: ClassTag[T]): Array[T] =
+    fillArray(new Array[T](length))
+
+  def sameElements(that: Iterable[T]): Boolean =
+    this.toIterable.iterator.sameElements(that.iterator)
 
   def **(b: Tensor[T])(implicit m: TensorMultiplication[T]): Tensor[T] = {
     import m.tag
@@ -99,9 +115,12 @@ trait Tensor[T] extends collection.Seq[T] {
     c
   }
 
-  override def equals(obj: scala.Any): Boolean = {
-    obj match {
-      case obj: Tensor[T] => obj.shape.dropWhile(_ == 1) == this.shape.dropWhile(_ == 1) && obj.toSeq == this.toSeq
+  override def equals(that: scala.Any): Boolean = {
+    that match {
+      case tensor: Tensor[T] =>
+        val compatibleShape = tensor.shape.filter(_ != 1) == this.shape.filter(_ != 1)
+        val sameElements = tensor.sameElements(this.toIterable)
+        compatibleShape && sameElements
       case _ => false
     }
   }
@@ -212,7 +231,7 @@ trait Tensor[T] extends collection.Seq[T] {
     }
   }
 
-  override def iterator: Iterator[T] = (0 until length).iterator.map(x => apply(x))
+  override def toString: String = toIterable.mkString("Tensor(", ",", ")")
 
 }
 
@@ -234,7 +253,7 @@ object Tensor {
 }
 
 private class ArrayTensor[T] private[tensor] (
-    val shape: immutable.Seq[Int],
+    val shape: Seq[Int],
     val data: Array[T],
     val offset: Int = 0)(implicit val tag: ClassTag[T]) extends Tensor[T] {
 
@@ -244,17 +263,14 @@ private class ArrayTensor[T] private[tensor] (
 
   override def apply()(implicit tag: ClassTag[T]): Tensor[T] = this
 
-  override def toSeq: Seq[T] = data.slice(offset, length + offset).toSeq
-
   override def isView = false
 
-  override def iterator: Iterator[T] = data.iterator.slice(offset, data.length)
 }
 
 private class CombineTensor[T, A, B](ta: Tensor[A], tb: Tensor[B], f: (A, B) => T)(implicit val tag: ClassTag[T]) extends Tensor[T] {
   require(ta.shape == tb.shape)
 
-  override def shape: immutable.Seq[Int] = ta.shape
+  override def shape: Seq[Int] = ta.shape
 
   override def isView: Boolean = true
 
@@ -265,11 +281,11 @@ private class CombineTensor[T, A, B](ta: Tensor[A], tb: Tensor[B], f: (A, B) => 
 }
 
 private class MapTensor[T, R](tensor: Tensor[T], f: T => R)(implicit val tag: ClassTag[R]) extends Tensor[R] {
-  override def shape: immutable.Seq[Int] = tensor.shape
+  override def shape: Seq[Int] = tensor.shape
 
   override def apply(a: Int): R = f(tensor(a))
 
-  override def toSeq: Seq[R] = tensor.toSeq.map(f)
+  override def toIterable: Iterable[R] = tensor.toIterable.map(f)
 
   override def isView = true
 
@@ -277,7 +293,7 @@ private class MapTensor[T, R](tensor: Tensor[T], f: T => R)(implicit val tag: Cl
     throw new UnsupportedOperationException("Update not supported on mapped tensor view, call apply first")
 }
 
-private class ViewTensor[T](val shape: immutable.Seq[Int], val tensor: Tensor[T], map: Int => Int) extends Tensor[T] {
+private class ViewTensor[T](val shape: Seq[Int], val tensor: Tensor[T], map: Int => Int) extends Tensor[T] {
 
   override def apply(i: Int): T = tensor(map(i))
 
@@ -287,10 +303,10 @@ private class ViewTensor[T](val shape: immutable.Seq[Int], val tensor: Tensor[T]
 
 }
 
-private class TransposeTensor[T](shape: immutable.Seq[Int], tensor: Tensor[T], map: Int => Int)
+private class TransposeTensor[T](shape: Seq[Int], tensor: Tensor[T], map: Int => Int)
   extends ViewTensor[T](shape, tensor, map)
 
-private class ReshapeTensor[T](val shape: immutable.Seq[Int], val tensor: Tensor[T]) extends Tensor[T] {
+private class ReshapeTensor[T](val shape: Seq[Int], val tensor: Tensor[T]) extends Tensor[T] {
   override def isView: Boolean = true
 
   override def apply(i: Int): T = tensor(i)
@@ -299,7 +315,7 @@ private class ReshapeTensor[T](val shape: immutable.Seq[Int], val tensor: Tensor
 
 }
 
-class EchoTensor(val shape: immutable.Seq[Int]) extends Tensor[Int] {
+class EchoTensor(val shape: Seq[Int]) extends Tensor[Int] {
 
   override def isView: Boolean = true
 
@@ -308,21 +324,20 @@ class EchoTensor(val shape: immutable.Seq[Int]) extends Tensor[Int] {
   override def update(a: Int, v: Int): Unit =
     throw new UnsupportedOperationException("Update not supported on IndexTensor, call apply() first")
 
-  override def toSeq: Seq[Int] = 0 until length
 }
 
 object EchoTensor {
-  def apply(shape: immutable.Seq[Int]): Tensor[Int] = new EchoTensor(shape)
+  def apply(shape: Seq[Int]): Tensor[Int] = new EchoTensor(shape)
 }
 
-private class IndexTensor(val shape: immutable.Seq[Int]) extends Tensor[Seq[Int]] {
+private class IndexTensor(val shape: Seq[Int]) extends Tensor[Seq[Int]] {
 
   override def isView: Boolean = false
 
   override def apply(i: Int): Seq[Int] = {
     val output = new Array[Int](shape.length)
     unindex(stride, output)(i)
-    output.toSeq
+    ArraySeq.unsafeWrapArray(output)
   }
 
   override def update(a: Int, v: Seq[Int]): Unit =
@@ -331,6 +346,6 @@ private class IndexTensor(val shape: immutable.Seq[Int]) extends Tensor[Seq[Int]
 }
 
 object IndexTensor {
-  def apply(shape: immutable.Seq[Int]): Tensor[Seq[Int]] = new IndexTensor(shape)
+  def apply(shape: Seq[Int]): Tensor[Seq[Int]] = new IndexTensor(shape)
 }
 

@@ -7,7 +7,7 @@ class LongToBooleanConverter extends Converter[Long, Boolean] {
 
   val n = 64
 
-  val zero = 0
+  val zero = 0L
 
   def read(s: Long, i: Int): Boolean =
     (readLong(1, s, toBigEndian(i)) & 1) == 1

@@ -1,10 +1,10 @@
 package com.github.arzt.tensor
 
-import scala.collection.immutable
+import scala.collection.immutable.Seq
 import scala.reflect.ClassTag
 
 private class MergeTensor[T](
-    val shape: immutable.Seq[Int],
+    val shape: Seq[Int],
     parent: Tensor[Tensor[T]],
     parentMap: Int => Int,
     childMap: Int => Int)(implicit val tag: ClassTag[T]) extends Tensor[T] {
@@ -26,25 +26,26 @@ private class MergeTensor[T](
 
 object MergeTensor {
 
-  private[tensor] def getShape[T](t: Tensor[Tensor[T]]): immutable.Seq[Int] = {
+  private[tensor] def getShape[T](t: Tensor[Tensor[T]]): Seq[Int] = {
     val shapes = t.map(_.shape)
     val n = t.shape.length
     (0 until n)
       .foldLeft(shapes) {
         case (tmp, i) => tmp
-          .dissect(i).map(_.toSeq)
+          .dissect(i)
+          .map(_.toIterable)
           .map(_.reduce((a, b) => a.updated(i, a(i) + b(i))))
       }
       .apply(0)
   }
 
-  private[tensor] def getParentAndChildMap[T](t: Tensor[Tensor[T]], shape: immutable.Seq[Int]): (Array[Int], Array[Int]) = {
+  private[tensor] def getParentAndChildMap[T](t: Tensor[Tensor[T]], shape: Seq[Int]): (Array[Int], Array[Int]) = {
     val width = shape.last
     val tWidth = t.shape.last
     val n = shape.product
     val pos = new Array[Int](t.length)
-    val widths = t.map(_.shape.last).toSeq.toArray
-    val lengths = t.map(_.length).toSeq.toArray
+    val widths = t.map(_.shape.last).toIterable.toArray
+    val lengths = t.map(_.length).toIterable.toArray
     val parentMap = new Array[Int](n)
     val childMap = new Array[Int](n)
     val link = (0 until tWidth).toArray

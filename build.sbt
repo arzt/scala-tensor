@@ -8,14 +8,15 @@ scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature", "-language:impli
 
 organization := "com.github.arzt"
 
-scalaVersion := "2.13.0"
+scalaVersion := "2.13.1"
 
 libraryDependencies ++= Seq(
   "org.specs2" %% "specs2-core" % "4.6.0" % "test",
-  "org.jblas" % "jblas" % "1.2.4"
+  "org.jblas" % "jblas" % "1.2.4",
+  "org.scala-lang.modules" %% "scala-collection-compat" % "2.1.2"
 )
 
-crossScalaVersions := List("2.13.0", "2.12.8", "2.11.12")
+crossScalaVersions := List("2.13.1", "2.12.10", "2.11.12")
 
 
 scalariformPreferences := scalariformPreferences.value
