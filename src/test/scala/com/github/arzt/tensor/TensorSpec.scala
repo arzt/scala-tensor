@@ -165,7 +165,7 @@ class TensorSpec extends Specification {
     }
     "create vector" in {
       val t = Tensor(Array(1, 2, 3))
-      t.toIterable.toSeq === Seq(1, 2, 3)
+      t.sameElements(Seq(1, 2, 3))
     }
     "read nrows and ncols" in {
       val t = Tensor(3, 4)
@@ -182,7 +182,7 @@ class TensorSpec extends Specification {
     }
     "support stepped indexing" in {
       val t = Tensor(Array(0, 1, 2, 3, 4, 5, 6, 7, 8))
-      t(1 until 8 by 3).toIterable.toSeq === Seq(1, 4, 7)
+      t(1 until 8 by 3).sameElements(Seq(1, 4, 7))
       t(::).isView === true
     }
     "mapping" in {
@@ -194,7 +194,7 @@ class TensorSpec extends Specification {
     "support addition" in {
       val t = Tensor(Array(1, 2, 3, 4, 5, 6, 7, 8, 9))
       val h = t + 4
-      h.toIterable.toSeq === Array(1, 2, 3, 4, 5, 6, 7, 8, 9).map(_ + 4).toSeq
+      h.sameElements(Array(1, 2, 3, 4, 5, 6, 7, 8, 9).map(_ + 4))
     }
     "reassignment" in {
       val res = Array(0, 0, 0, 0)

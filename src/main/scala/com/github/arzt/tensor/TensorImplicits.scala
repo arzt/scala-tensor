@@ -108,7 +108,7 @@ object TensorImplicits {
     }
 
   implicit def intTensorToIndex(t: Tensor[Int]): Index =
-    _ => t.toIterable.toArray
+    _ => t.toArray
 
   implicit def boolTensorToIndex(t: Tensor[Boolean]): Index =
     _ => ArraySeq((0 until t.length).filter(t.apply): _*)

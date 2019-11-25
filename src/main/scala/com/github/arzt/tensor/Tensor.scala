@@ -29,7 +29,7 @@ trait Tensor[T] {
 
   def isView: Boolean
 
-  def apply()(implicit tag: ClassTag[T]): Tensor[T] = new ArrayTensor[T](shape, toIterable.toArray, 0)
+  def apply()(implicit tag: ClassTag[T]): Tensor[T] = new ArrayTensor[T](shape, toArray, 0)
 
   def apply(a: Int): T
 
@@ -284,8 +284,6 @@ private class MapTensor[T, R](tensor: Tensor[T], f: T => R)(implicit val tag: Cl
   override def shape: Seq[Int] = tensor.shape
 
   override def apply(a: Int): R = f(tensor(a))
-
-  override def toIterable: Iterable[R] = tensor.toIterable.map(f)
 
   override def isView = true
 
