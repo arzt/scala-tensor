@@ -27,18 +27,6 @@ package object tensor {
     output
   }
 
-  def index(stride: Array[Int], b: Int, a: Int): Int = {
-    b * stride(0) + a
-  }
-
-  def index(stride: Array[Int], c: Int, b: Int, a: Int): Int = {
-    c * stride(0) + b * stride(1) + a
-  }
-
-  def index(stride: Array[Int], d: Int, c: Int, b: Int, a: Int): Int = {
-    d * stride(0) + c * stride(1) + b * stride(2) + a
-  }
-
   private[tensor] def index(stride: Array[Int]): (Int => Int) => Int =
     is => {
       var i = 0
