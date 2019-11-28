@@ -1,7 +1,9 @@
 package com.github.arzt
 
+import collection.immutable.Seq
+
 package object tensor {
-  type Index = Int => collection.Seq[Int]
+  type Index = Int => Iterable[Int]
 
   def getIndices(stride: Array[Int], is: collection.Seq[Int]*): Array[Int] = {
     val n = is.view.map(_.length).product

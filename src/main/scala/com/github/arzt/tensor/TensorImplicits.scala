@@ -2,12 +2,14 @@ package com.github.arzt.tensor
 
 import java.awt.image.BufferedImage
 
+import com.github.arzt.math.generalizedMod
 import com.github.arzt.tensor.image.ImageTool
 import com.github.arzt.tensor.image.ImageTool.fromImage
 import com.github.arzt.tensor.op.DoubleTensorMultiplication
 import com.github.arzt.tensor.op.FloatTensorMultiplication
 
 import scala.collection.compat.immutable.ArraySeq
+import scala.collection.compat.immutable.ArraySeq.unsafeWrapArray
 import scala.language.implicitConversions
 import scala.languageFeature.implicitConversions
 import scala.reflect.ClassTag
@@ -98,16 +100,14 @@ object TensorImplicits {
     }
   }
 
-  implicit def int2Index(i: Int): Index = dim => Seq(((i % dim) + dim) % dim)
+  implicit def int2Index(i: Int): Index =
+    n => Seq(generalizedMod(i, n))
 
-  implicit def seq2Index(seq: collection.Seq[Int]): Index = _ => seq
+  implicit def iterable2Index(seq: Iterable[Int]): Index =
+    _ => seq
 
-  implicit def bool2index(seq: Seq[Boolean]): Index = dimSize => {
-    Iterator
-      .continually(seq)
-    assert(dimSize == seq.size)
-    (0 until dimSize).view.filter(seq).toArray.toSeq
-  }
+  implicit def bool2index(seq: Int => Boolean): Index =
+    n => unsafeWrapArray((0 until n).view.filter(seq).toArray)
 
   implicit def tripleToIndex(tripple: (Int, Int, Int)): Index =
     dim => {
@@ -118,18 +118,15 @@ object TensorImplicits {
     }
 
   implicit def intTensorToIndex(t: Tensor[Int]): Index =
-    _ => t.toArray
+    _ => ArraySeq.unsafeWrapArray(t.toArray)
 
   implicit def boolTensorToIndex(t: Tensor[Boolean]): Index =
-    _ => ArraySeq((0 until t.length).filter(t.apply): _*)
+    _ => ArraySeq.unsafeWrapArray((0 until t.length).filter(t.apply).toArray)
 
   val $colon$colon: Index = dimSize => 0 until dimSize
 
   val $minus$colon$colon: Index =
-    dimSize => {
-      val arr = ((dimSize - 1) to 0 by -1).toArray
-      arr
-    }
+    dimSize => (dimSize - 1) to 0 by -1
 
   implicit class IntOps(b: Int) {
     def ::(a: Int): (Int, Int, Int) = (a, b, 1)
