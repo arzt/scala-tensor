@@ -8,7 +8,6 @@ import com.github.arzt.tensor.image.ImageTool.fromImage
 import com.github.arzt.tensor.op.DoubleTensorMultiplication
 import com.github.arzt.tensor.op.FloatTensorMultiplication
 
-import scala.collection.compat.immutable.ArraySeq
 import scala.collection.compat.immutable.ArraySeq.unsafeWrapArray
 import scala.language.implicitConversions
 import scala.languageFeature.implicitConversions
@@ -107,21 +106,21 @@ object TensorImplicits {
     _ => seq
 
   implicit def bool2index(seq: Int => Boolean): Index =
-    n => unsafeWrapArray((0 until n).view.filter(seq).toArray)
+    n => (0 until n).view.filter(seq)
 
-  implicit def tripleToIndex(tripple: (Int, Int, Int)): Index =
-    dim => {
-      val (from, to, by) = tripple
-      val fromNorm = ((dim + from) % dim + dim) % dim
-      val toNorm = ((dim + to) % dim + dim) % dim
+  implicit def tripleToIndex(triple: (Int, Int, Int)): Index =
+    n => {
+      val (from, to, by) = triple
+      val fromNorm = generalizedMod(from, n)
+      val toNorm = generalizedMod(to, n)
       Range.inclusive(fromNorm, toNorm, by)
     }
 
   implicit def intTensorToIndex(t: Tensor[Int]): Index =
-    _ => ArraySeq.unsafeWrapArray(t.toArray)
+    _ => unsafeWrapArray(t.toArray)
 
   implicit def boolTensorToIndex(t: Tensor[Boolean]): Index =
-    _ => ArraySeq.unsafeWrapArray((0 until t.length).filter(t.apply).toArray)
+    _ => unsafeWrapArray((0 until t.length).filter(t.apply).toArray)
 
   val $colon$colon: Index = dimSize => 0 until dimSize
 
