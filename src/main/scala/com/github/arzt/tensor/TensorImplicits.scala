@@ -1,5 +1,9 @@
 package com.github.arzt.tensor
 
+import java.awt.image.BufferedImage
+
+import com.github.arzt.tensor.image.ImageTool
+import com.github.arzt.tensor.image.ImageTool.fromImage
 import com.github.arzt.tensor.op.DoubleTensorMultiplication
 import com.github.arzt.tensor.op.FloatTensorMultiplication
 
@@ -46,6 +50,12 @@ object TensorImplicits {
     def ^(that: Tensor[Boolean]): Tensor[Boolean] = tensor.combine[Boolean, Boolean](that, _ ^ _)
   }
 
+  implicit class ByteTensorOps(tensor: Tensor[Byte]) {
+    def asImage(imageType: Int): BufferedImage = {
+      ImageTool.toImage(tensor, imageType)
+    }
+  }
+
   def getOp[T](t: Tensor[T]): Char =
     if (t.isInstanceOf[TransposeTensor[T]]) 't' else 'n'
 
@@ -90,7 +100,7 @@ object TensorImplicits {
 
   implicit def int2Index(i: Int): Index = dim => Seq(((i % dim) + dim) % dim)
 
-  implicit def seq2Index(seq: Seq[Int]): Index = _ => seq
+  implicit def seq2Index(seq: collection.Seq[Int]): Index = _ => seq
 
   implicit def bool2index(seq: Seq[Boolean]): Index = dimSize => {
     Iterator
@@ -115,7 +125,11 @@ object TensorImplicits {
 
   val $colon$colon: Index = dimSize => 0 until dimSize
 
-  val $minus$colon$colon: Index = dimSize => (dimSize - 1) to 0 by -1
+  val $minus$colon$colon: Index =
+    dimSize => {
+      val arr = ((dimSize - 1) to 0 by -1).toArray
+      arr
+    }
 
   implicit class IntOps(b: Int) {
     def ::(a: Int): (Int, Int, Int) = (a, b, 1)
@@ -123,6 +137,10 @@ object TensorImplicits {
 
   implicit class TrippleOps(t: (Int, Int, Int)) {
     def ::(a: Int): (Int, Int, Int) = (a, t._1, t._2)
+  }
+
+  implicit class BufferedImageOps(image: BufferedImage) {
+    def asTensor: Tensor[Byte] = fromImage(image)
   }
 
   implicit val dtM = DoubleTensorMultiplication

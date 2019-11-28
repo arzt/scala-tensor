@@ -1,6 +1,9 @@
 package com.github.arzt.tensor
 
+import java.awt.image.BufferedImage
+
 import com.github.arzt.tensor.convert.Converter
+import com.github.arzt.tensor.image.ImageTool
 import com.github.arzt.tensor.op.TensorMultiplication
 
 import scala.collection.compat.immutable.ArraySeq
