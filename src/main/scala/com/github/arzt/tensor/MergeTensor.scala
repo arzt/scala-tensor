@@ -1,13 +1,12 @@
 package com.github.arzt.tensor
 
 import scala.collection.immutable.Seq
-import scala.reflect.ClassTag
 
 private class MergeTensor[T](
     val shape: Seq[Int],
     parent: Tensor[Tensor[T]],
     parentMap: Int => Int,
-    childMap: Int => Int)(implicit val tag: ClassTag[T]) extends Tensor[T] {
+    childMap: Int => Int) extends Tensor[T] {
 
   override def isView: Boolean = true
 
