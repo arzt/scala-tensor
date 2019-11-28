@@ -3,7 +3,7 @@ package com.github.arzt.tensor
 import com.github.arzt.tensor.convert.Converter
 import com.github.arzt.tensor.op.TensorMultiplication
 
-import scala.collection.compat.immutable.ArraySeq
+import scala.collection.compat.immutable.ArraySeq.unsafeWrapArray
 import scala.collection.immutable.Seq
 import scala.reflect.ClassTag
 
@@ -36,30 +36,30 @@ trait Tensor[T] {
   def update(a: Int, v: T): Unit // = throw new UnsupportedOperationException("Update not possible on view")
 
   def apply(a: Index): Tensor[T] = {
-    val sa = a(shape(0))
-    new ViewTensor(Vector(sa.size), this, sa.toArray)
+    val sa = unsafeWrapArray(a(shape(0)).toArray)
+    new ViewTensor(Vector(sa.size), this, sa)
   }
 
   def apply(b: Index, a: Index): Tensor[T] = {
-    val u = b(shape(0))
-    val v = a(shape(1))
+    val u = unsafeWrapArray(b(shape(0)).toArray)
+    val v = unsafeWrapArray(a(shape(1)).toArray)
     val mapping = getIndices(stride, u, v)
     new ViewTensor(Vector(u.size, v.size), this, mapping)
   }
 
   def apply(c: Index, b: Index, a: Index): Tensor[T] = {
-    val sa = c(shape(0))
-    val sb = b(shape(1))
-    val sc = a(shape(2))
+    val sa = unsafeWrapArray(c(shape(0)).toArray)
+    val sb = unsafeWrapArray(b(shape(1)).toArray)
+    val sc = unsafeWrapArray(a(shape(2)).toArray)
     val mapping = getIndices(stride, sa, sb, sc)
     new ViewTensor(Vector(sa.length, sb.length, sc.length), this, mapping)
   }
 
   def apply(d: Index, c: Index, b: Index, a: Index): Tensor[T] = {
-    val sd = d(shape(0))
-    val sc = c(shape(1))
-    val sb = b(shape(2))
-    val sa = a(shape(3))
+    val sd = unsafeWrapArray(d(shape(0)).toArray)
+    val sc = unsafeWrapArray(c(shape(1)).toArray)
+    val sb = unsafeWrapArray(b(shape(2)).toArray)
+    val sa = unsafeWrapArray(a(shape(3)).toArray)
     val mapping = getIndices(stride, sd, sc, sb, sa)
     new ViewTensor(Vector(sd.length, sc.length, sb.length, sa.length), this, mapping)
   }
@@ -335,7 +335,7 @@ private class IndexTensor(val shape: Seq[Int]) extends Tensor[Seq[Int]] {
   override def apply(i: Int): Seq[Int] = {
     val output = new Array[Int](shape.length)
     unindex(stride, output)(i)
-    ArraySeq.unsafeWrapArray(output)
+    unsafeWrapArray(output)
   }
 
   override def update(a: Int, v: Seq[Int]): Unit =
