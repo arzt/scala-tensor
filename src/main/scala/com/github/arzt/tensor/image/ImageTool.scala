@@ -26,7 +26,7 @@ object ImageTool {
     buffer match {
       case bb: DataBufferByte =>
         val data = bb.getBankData()(0)
-        tensor.fillArray(data, 0)
+        tensor.cached(data)
         buffer
       case _ =>
         import convert.implicits._

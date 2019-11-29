@@ -47,7 +47,7 @@ class TensorSpec extends Specification {
         5, 6,
         7, 8)
         .asTensor(2, 2, 1, 2)
-      val b = t(::, ::, ::, ::).apply()
+      val b = t(::, ::, ::, ::)
       t(0, 0, 0, 0)(0) === 1
       t(0, 1, 0, 1)(0) === 4
       t(1, 1, 0, 1)(0) === 8
@@ -130,12 +130,17 @@ class TensorSpec extends Specification {
         0, 0, 1, 2)
       t.sameElements(expected)
     }
-    "force" in {
+    "cache" in {
+      val t = EchoTensor(Seq(2, 4))
+      val t2 = t.cached
+      t2 === t
+    }
+    "cache parallel" in {
       val data = Array[Int](
         1, 2, 0, 0,
         0, 0, 0, 0)
-      val t = Tensor(data, 2, 4)
-      val t2 = t()
+      val t = EchoTensor(Seq(2, 4, 500))
+      val t2 = t.cachedParallel
       t2 === t
     }
     "linear view" in {
@@ -609,9 +614,9 @@ class TensorSpec extends Specification {
         .asRows(3)
       result.concatenate() === exp
     }
-    "to array" in {
+    "get data" in {
       val values = Array(1, 2, 3, 4)
-      values.asRows(2).toArray.sameElements(values)
+      values.asRows(2).getData.sameElements(values)
     }
   }
   "inflate from long to int" should {
@@ -630,14 +635,14 @@ class TensorSpec extends Specification {
       implicit val c: LongToIntConverter = new LongToIntConverter
       def rand = Random.nextLong()
       val back = Array[Long](rand, rand, rand)
-      val tmp = back.asRow.inflate[Int].apply()
+      val tmp = back.asRow.inflate[Int].cached
       val tensor = tmp.deflate[Long]
       val long = tensor
       long.sameElements(back)
     }
     "throw exception if size is not compatible with type" in {
       import convert.implicits.longToInt
-      Array(0).asRow().deflate[Long] should throwA[IllegalArgumentException]
+      Array(0).asRow.deflate[Long] should throwA[IllegalArgumentException]
     }
   }
 }
