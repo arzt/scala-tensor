@@ -537,10 +537,6 @@ class TensorSpec extends Specification {
     "Indexing tensor" in {
       val shape = Vector(2, 3, 4)
       val t = IndexTensor(shape)
-      (0 until t.length)
-        .foreach { i =>
-          println(t(i))
-        }
       t.length === shape.product
     }
     "dissect tensor" in {
