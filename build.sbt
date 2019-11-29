@@ -16,6 +16,8 @@ libraryDependencies ++= Seq(
   "org.scala-lang.modules" %% "scala-collection-compat" % "2.1.2"
 )
 
+scalacOptions ++= Seq("-target:jvm-1.8") //needed for scala 2.11
+
 crossScalaVersions := List("2.13.1", "2.12.10", "2.11.12")
 
 

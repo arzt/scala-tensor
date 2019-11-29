@@ -117,7 +117,7 @@ object TensorImplicits {
     }
 
   implicit def intTensorToIndex(t: Tensor[Int]): Index =
-    _ => unsafeWrapArray(t.toArray)
+    _ => unsafeWrapArray(t.getData)
 
   implicit def boolTensorToIndex(t: Tensor[Boolean]): Index =
     _ => unsafeWrapArray((0 until t.length).filter(t.apply).toArray)

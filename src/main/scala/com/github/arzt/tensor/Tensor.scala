@@ -1,5 +1,8 @@
 package com.github.arzt.tensor
 
+import java.util.function.IntConsumer
+import java.util.stream.IntStream
+
 import com.github.arzt.tensor.convert.Converter
 import com.github.arzt.tensor.op.TensorMultiplication
 
@@ -29,7 +32,31 @@ trait Tensor[T] {
 
   def isView: Boolean
 
-  def apply()(implicit tag: ClassTag[T]): Tensor[T] = new ArrayTensor[T](shape, toArray, 0)
+  def cached(implicit tag: ClassTag[T]): ArrayTensor[T] =
+    cached(new Array[T](length))
+
+  def cached(buf: Array[T], offset: Int = 0): ArrayTensor[T] = {
+    var i = 0
+    while (i < length) {
+      buf(i + offset) = this(i)
+      i += 1
+    }
+    new ArrayTensor[T](shape, buf, offset)
+  }
+
+  def cachedParallel(buf: Array[T], offset: Int = 0): ArrayTensor[T] = {
+    IntStream.range(0, length).parallel()
+      .forEach(
+        new IntConsumer {
+          override def accept(i: Int): Unit = {
+            buf(i + offset) = apply(i)
+          }
+        })
+    new ArrayTensor[T](shape, buf, offset)
+  }
+
+  def cachedParallel(implicit tag: ClassTag[T]): ArrayTensor[T] =
+    cached(new Array[T](length))
 
   def apply(a: Int): T
 
@@ -90,18 +117,6 @@ trait Tensor[T] {
 
   def toIterable: Iterable[T] = (0 until length).view.map(this.apply)
 
-  def fillArray(a: Array[T], offset: Int = 0): Array[T] = {
-    var i = 0
-    while (i < length) {
-      a(i + offset) = this(i)
-      i += 1
-    }
-    a
-  }
-
-  def toArray(implicit tag: ClassTag[T]): Array[T] =
-    fillArray(new Array[T](length))
-
   def sameElements(that: Iterable[T]): Boolean =
     this.toIterable.iterator.sameElements(that.iterator)
 
@@ -146,24 +161,23 @@ trait Tensor[T] {
     }
   }
 
-  private[tensor] def getData(implicit tag: ClassTag[T]): Array[T] =
+  def getData(implicit tag: ClassTag[T]): Array[T] =
     this match {
       case array: ArrayTensor[T] =>
-        array.data
+        array.getData
       case transpose: TransposeTensor[T] =>
         transpose.tensor match {
           case array2: ArrayTensor[T] =>
-            array2.data
+            array2.getData
           case _ =>
             transpose
-              .tensor()
-              .asInstanceOf[ArrayTensor[T]]
-              .data
+              .cached
+              .getData
         }
       case _ =>
-        this()
-          .asInstanceOf[ArrayTensor[T]]
-          .data
+        this
+          .cached
+          .getData
     }
 
   def reshape(newShape: Int*): Tensor[T] = {
@@ -213,7 +227,6 @@ trait Tensor[T] {
         val mapping = getIndices(stride, is.toSeq: _*)
         new ViewTensor(childShape, this, mapping): Tensor[T]
       }
-      .apply()
   }
 
   def inflate[U: ClassTag](implicit converter: Converter[T, U]): Tensor[U] = {
@@ -252,18 +265,20 @@ object Tensor {
 
 }
 
-private class ArrayTensor[T] private[tensor] (
+class ArrayTensor[T] private[tensor] (
     val shape: Seq[Int],
-    val data: Array[T],
-    val offset: Int = 0)(implicit val tag: ClassTag[T]) extends Tensor[T] {
+    private val data: Array[T],
+    val offset: Int = 0) extends Tensor[T] {
 
   override def apply(a: Int): T = data(offset + a)
 
   override def update(a: Int, v: T): Unit = data(offset + a) = v
 
-  override def apply()(implicit tag: ClassTag[T]): Tensor[T] = this
-
   override def isView = false
+
+  override def cached(implicit tag: ClassTag[T]): ArrayTensor[T] = this
+
+  override def getData(implicit tag: ClassTag[T]): Array[T] = data
 
 }
 

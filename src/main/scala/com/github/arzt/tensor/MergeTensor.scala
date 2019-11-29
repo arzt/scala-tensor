@@ -43,8 +43,8 @@ object MergeTensor {
     val tWidth = t.shape.last
     val n = shape.product
     val pos = new Array[Int](t.length)
-    val widths = t.map(_.shape.last).toArray
-    val lengths = t.map(_.length).toArray
+    val widths = t.map(_.shape.last).getData
+    val lengths = t.map(_.length).getData
     val parentMap = new Array[Int](n)
     val childMap = new Array[Int](n)
     val link = (0 until tWidth).toArray
