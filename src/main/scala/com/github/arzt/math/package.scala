@@ -8,9 +8,9 @@ package object math {
    * @param n divisor
    * @return y remainder
    */
-  def generalizedMod(x: Int, n: Int): Int = {
+  def positiveMod(n: Int)(x: Int): Int = {
     val m = x % n
-    if (m > -1) m else m + n
+    if (m >= 0) m else m + n
   }
 
 }
