@@ -2,7 +2,7 @@ package com.github.arzt.tensor
 
 import java.awt.image.BufferedImage
 
-import com.github.arzt.math.generalizedMod
+import com.github.arzt.math.positiveMod
 import com.github.arzt.tensor.image.ImageTool
 import com.github.arzt.tensor.image.ImageTool.fromImage
 import com.github.arzt.tensor.op.DoubleTensorMultiplication
@@ -100,32 +100,33 @@ object TensorImplicits {
   }
 
   implicit def int2Index(i: Int): Index =
-    n => Seq(generalizedMod(i, n))
+    n => List(positiveMod(n)(i))
 
-  implicit def iterable2Index(seq: Iterable[Int]): Index =
-    _ => seq
+  implicit def iterable2Index(xs: Iterable[Int]): Index =
+    _ => xs
 
   implicit def bool2index(seq: Int => Boolean): Index =
     n => (0 until n).view.filter(seq)
 
   implicit def tripleToIndex(triple: (Int, Int, Int)): Index =
     n => {
+      val mod = positiveMod(n)(_)
       val (from, to, by) = triple
-      val fromNorm = generalizedMod(from, n)
-      val toNorm = generalizedMod(to, n)
+      val fromNorm = mod(from)
+      val toNorm = mod(to)
       Range.inclusive(fromNorm, toNorm, by)
     }
 
   implicit def intTensorToIndex(t: Tensor[Int]): Index =
-    _ => unsafeWrapArray(t.getData)
+    n => t.map(positiveMod(n)).toIterable
 
   implicit def boolTensorToIndex(t: Tensor[Boolean]): Index =
-    _ => unsafeWrapArray((0 until t.length).filter(t.apply).toArray)
+    _ => (0 until t.length).view.filter(t.apply)
 
   val $colon$colon: Index = dimSize => 0 until dimSize
 
   val $minus$colon$colon: Index =
-    dimSize => (dimSize - 1) to 0 by -1
+    n => (n - 1) to 0 by -1
 
   implicit class IntOps(b: Int) {
     def ::(a: Int): (Int, Int, Int) = (a, b, 1)

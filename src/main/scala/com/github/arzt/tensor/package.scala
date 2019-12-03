@@ -5,28 +5,6 @@ import collection.immutable.Seq
 package object tensor {
   type Index = Int => Iterable[Int]
 
-  def getIndices(stride: Array[Int], is: collection.Seq[Int]*): Array[Int] = {
-    val n = is.view.map(_.length).product
-    val output = new Array[Int](n)
-    var i = 0
-
-    def indicesRec(l: Int, m: Int, offset: Int): Unit =
-      if (m == is.length) {
-        output(i) = offset
-        i += 1
-      } else {
-        var k = 0
-        while (k < is(m).length) {
-          val newOffset = offset + stride(l) * is(m)(k)
-          indicesRec(l + 1, m + 1, newOffset)
-          k += 1
-        }
-      }
-
-    indicesRec(0, 0, 0)
-    output
-  }
-
   private[tensor] def index(stride: Array[Int]): (Int => Int) => Int =
     is => {
       var i = 0
