@@ -225,7 +225,7 @@ class TensorSpec extends Specification {
     }
     "integer tensor indexing" in {
       val t = Array(1, 2, 3, 4).asTensor(4)
-      val idx = Array(3, 2, 1, 0).asTensor(4)
+      val idx = Array(3, -2, 1, 0).asTensor(4)
       t(idx) === Array(4, 3, 2, 1).asTensor(4)
     }
     "boolean tensor indexing" in {

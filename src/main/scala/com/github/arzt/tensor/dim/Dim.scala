@@ -1,16 +1,17 @@
-package com.github.arzt.tensor.dim
+package com.github.arzt.tensor
+package dim
 
-import com.github.arzt.math.generalizedMod
+import collection.immutable.IndexedSeq
 
-sealed trait Dim extends Seq[Int] {
+sealed trait Dim extends IndexedSeq[Int] {
 
-  def dimIndices: Seq[Int]
+  def subIndices: Seq[Int]
 
   def shape: List[Int]
 
   def n: Int
 
-  val dim: Int = dimIndices.length
+  def originalLength: Int
 
   override def iterator: Iterator[Int] =
     (0 until length).iterator.map(apply)
@@ -19,10 +20,16 @@ sealed trait Dim extends Seq[Int] {
 
 object Dim {
 
-  def apply(ns: List[Int]): Dim =
+  def fromDimensions(ns: List[Int]): Dim =
     ns match {
       case List(n) => Dim(n)
-      case n :: tail => Dim(n, Dim(tail))
+      case n :: tail => Dim(n, fromDimensions(tail))
+    }
+
+  def apply(ns: List[(Int, Seq[Int])]): Dim =
+    ns match {
+      case List((n, seq)) => Dim(n, seq)
+      case (n, seq) :: tail => Dim(n, seq, Dim(tail))
     }
 
   def apply(n: Int, is: Seq[Int]): UnitDim =
@@ -39,29 +46,30 @@ object Dim {
 
 }
 
-class UnitDim(val n: Int, val dimIndices: Seq[Int]) extends Dim {
+class UnitDim(val n: Int, val subIndices: Seq[Int]) extends Dim {
 
-  override val shape: List[Int] = List(dim)
+  override val shape: List[Int] = List(subIndices.length)
 
   override def apply(i: Int): Int =
-    generalizedMod(dimIndices(i), n)
+    subIndices(i)
 
-  override def length: Int =
-    dimIndices.length
+  override val length: Int =
+    subIndices.length
 
-  def apply(seq: Seq[Int]): UnitDim =
-    new UnitDim(n, seq)
+  override val originalLength: Int = n
 
 }
 
 class RecDim[K <: Dim](
     val n: Int,
-    val dimIndices: Seq[Int],
+    val subIndices: Seq[Int],
     child: K) extends Dim {
 
-  override val shape: List[Int] = dim :: child.shape
+  override val shape: List[Int] = subIndices.length :: child.shape
 
-  override def length: Int = child.length * dim
+  override val length: Int = child.length * subIndices.length
+
+  override val originalLength: Int = n * child.originalLength
 
   override def apply(i: Int): Int = {
     if (i < 0 || i >= length) {
@@ -69,12 +77,8 @@ class RecDim[K <: Dim](
     } else {
       val j = i % child.length
       val m = i / child.length
-      child(j) + child.length * generalizedMod(dimIndices(m), n)
+      child(j) + child.originalLength * subIndices(m)
     }
   }
-
-  def sub(x: Seq[Int]): RecDim[K] = Dim(n, x, child)
-
-  def apply(x: Seq[Int], f: K => K = identity): RecDim[K] = Dim[K](n, x, f(child))
 
 }

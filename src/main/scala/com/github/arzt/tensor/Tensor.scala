@@ -4,6 +4,7 @@ import java.util.function.IntConsumer
 import java.util.stream.IntStream
 
 import com.github.arzt.tensor.convert.Converter
+import com.github.arzt.tensor.dim.Dim
 import com.github.arzt.tensor.op.TensorMultiplication
 
 import scala.collection.compat.immutable.ArraySeq.unsafeWrapArray
@@ -62,33 +63,18 @@ trait Tensor[T] {
 
   def update(a: Int, v: T): Unit // = throw new UnsupportedOperationException("Update not possible on view")
 
-  def apply(a: Index): Tensor[T] = {
-    val sa = unsafeWrapArray(a(shape(0)).toArray)
-    new ViewTensor(Vector(sa.size), this, sa)
-  }
-
-  def apply(b: Index, a: Index): Tensor[T] = {
-    val u = unsafeWrapArray(b(shape(0)).toArray)
-    val v = unsafeWrapArray(a(shape(1)).toArray)
-    val mapping = getIndices(stride, u, v)
-    new ViewTensor(Vector(u.size, v.size), this, mapping)
-  }
-
-  def apply(c: Index, b: Index, a: Index): Tensor[T] = {
-    val sa = unsafeWrapArray(c(shape(0)).toArray)
-    val sb = unsafeWrapArray(b(shape(1)).toArray)
-    val sc = unsafeWrapArray(a(shape(2)).toArray)
-    val mapping = getIndices(stride, sa, sb, sc)
-    new ViewTensor(Vector(sa.length, sb.length, sc.length), this, mapping)
-  }
-
-  def apply(d: Index, c: Index, b: Index, a: Index): Tensor[T] = {
-    val sd = unsafeWrapArray(d(shape(0)).toArray)
-    val sc = unsafeWrapArray(c(shape(1)).toArray)
-    val sb = unsafeWrapArray(b(shape(2)).toArray)
-    val sa = unsafeWrapArray(a(shape(3)).toArray)
-    val mapping = getIndices(stride, sd, sc, sb, sa)
-    new ViewTensor(Vector(sd.length, sc.length, sb.length, sa.length), this, mapping)
+  def apply(is: Index*): Tensor[T] = {
+    val list = shape
+      .indices
+      .map(
+        i => {
+          val dim = shape(i)
+          val index = is(i)
+          (dim, unsafeWrapArray(index(dim).toArray): Seq[Int])
+        })
+      .toList
+    val mapping = Dim(list)
+    new ViewTensor(mapping.shape, this, mapping)
   }
 
   def update(that: Tensor[T]): Unit = {
@@ -216,15 +202,13 @@ trait Tensor[T] {
     new IndexTensor(parentShape)
       .map { index =>
         val is = new Array[Seq[Int]](shape.length)
-        remainingDims
-          .foreach { i =>
-            is(i) = Seq(index(i))
-          }
-        dims
-          .foreach { i =>
-            is(i) = 0 until shape(i)
-          }
-        val mapping = getIndices(stride, is.toSeq: _*)
+        remainingDims.foreach { i =>
+          is(i) = index(i) to index(i)
+        }
+        dims.foreach { i =>
+          is(i) = 0 until shape(i)
+        }
+        val mapping = Dim(shape.zip(is).toList)
         new ViewTensor(childShape, this, mapping): Tensor[T]
       }
   }
