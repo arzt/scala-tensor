@@ -338,6 +338,7 @@ class TensorSpec extends Specification {
       (t1 * (-1)).abs === Array[Double](4, 5).asRow
       (t1 * 2) / 2 === t1
       (t1 * t1) / t1 === t1
+      20.toDouble / t1 === Array[Double](5, 4).asRow
     }
     "convert" in {
       val t1 = Array[Int](4, 5).asRow
