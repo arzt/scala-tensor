@@ -93,9 +93,9 @@ trait Tensor[T] {
 
   def :=(that: Tensor[T]): Unit = this() = that
 
-  def combine[B, R: ClassTag](that: Tensor[B], f: (T, B) => R): Tensor[R] = new CombineTensor[R, T, B](this, that, f)
+  def combine[B, R](that: Tensor[B], f: (T, B) => R): Tensor[R] = new CombineTensor[R, T, B](this, that, f)
 
-  def map[R: ClassTag](f: T => R): Tensor[R] = new MapTensor[T, R](this, f)
+  def map[R](f: T => R): Tensor[R] = new MapTensor[T, R](this, f)
 
   def ==(a: T): Tensor[Boolean] = this.map(_ == a)
 
@@ -213,12 +213,12 @@ trait Tensor[T] {
       }
   }
 
-  def inflate[U: ClassTag](implicit converter: Converter[T, U]): Tensor[U] = {
+  def inflate[U](implicit converter: Converter[T, U]): Tensor[U] = {
     val newShape = shape.updated(shape.indices.last, shape.last * converter.n)
     new InflateTensor[U, T](newShape, this)
   }
 
-  def deflate[U: ClassTag](implicit converter: Converter[U, T]): Tensor[U] = {
+  def deflate[U](implicit converter: Converter[U, T]): Tensor[U] = {
     val d = shape.last
     if (d % converter.n == 0) {
       val newShape = shape.updated(shape.indices.last, d / converter.n)
@@ -228,7 +228,7 @@ trait Tensor[T] {
     }
   }
 
-  override def toString: String = toIterable.mkString("Tensor(", ",", ")")
+  override def toString: String = toIterable.take(200).mkString("Tensor(", ",", "...)")
 
 }
 
@@ -237,14 +237,14 @@ object Tensor {
   def apply[T: ClassTag](shape: Int*): Tensor[T] =
     new ArrayTensor[T](shape.toVector, new Array[T](shape.product), 0)
 
-  def apply[T: ClassTag](data: Array[T], shape: Int*): Tensor[T] = {
+  def apply[T](data: Array[T], shape: Int*): Tensor[T] = {
     new ArrayTensor[T](if (shape.isEmpty) Vector(data.length) else shape.toVector, data, 0)
   }
 
-  def apply[T: ClassTag](offset: Int, data: Array[T]): Tensor[T] =
+  def apply[T](offset: Int, data: Array[T]): Tensor[T] =
     new ArrayTensor[T](Vector(data.length), data, offset)
 
-  def apply[T: ClassTag](offset: Int, data: Array[T], shape: Int*): Tensor[T] =
+  def apply[T](offset: Int, data: Array[T], shape: Int*): Tensor[T] =
     new ArrayTensor[T](shape.toVector, data, offset)
 
 }
@@ -266,7 +266,7 @@ class ArrayTensor[T] private[tensor] (
 
 }
 
-private class CombineTensor[T, A, B](ta: Tensor[A], tb: Tensor[B], f: (A, B) => T)(implicit val tag: ClassTag[T]) extends Tensor[T] {
+private class CombineTensor[T, A, B](ta: Tensor[A], tb: Tensor[B], f: (A, B) => T) extends Tensor[T] {
   require(ta.shape == tb.shape)
 
   override def shape: Seq[Int] = ta.shape
@@ -279,7 +279,7 @@ private class CombineTensor[T, A, B](ta: Tensor[A], tb: Tensor[B], f: (A, B) => 
     throw new UnsupportedOperationException("Update not supported on combined tensor view, call apply first")
 }
 
-private class MapTensor[T, R](tensor: Tensor[T], f: T => R)(implicit val tag: ClassTag[R]) extends Tensor[R] {
+private class MapTensor[T, R](tensor: Tensor[T], f: T => R) extends Tensor[R] {
   override def shape: Seq[Int] = tensor.shape
 
   override def apply(a: Int): R = f(tensor(a))

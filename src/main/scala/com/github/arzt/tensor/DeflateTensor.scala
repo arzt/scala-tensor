@@ -5,7 +5,7 @@ import com.github.arzt.tensor.convert.Converter
 import scala.reflect.ClassTag
 import collection.immutable.Seq
 
-class DeflateTensor[T, U](val shape: Seq[Int], val parent: Tensor[U])(implicit val tag: ClassTag[T], val convert: Converter[T, U]) extends Tensor[T] {
+class DeflateTensor[T, U](val shape: Seq[Int], val parent: Tensor[U])(implicit val convert: Converter[T, U]) extends Tensor[T] {
 
   override def isView: Boolean = parent.isView
 
