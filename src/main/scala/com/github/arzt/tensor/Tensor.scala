@@ -10,10 +10,9 @@ import com.github.arzt.tensor.op.TensorMultiplication
 import scala.collection.compat.immutable.ArraySeq.unsafeWrapArray
 import scala.collection.immutable.Seq
 import scala.reflect.ClassTag
+import scala.util.Random
 
 trait Tensor[T] {
-
-  def toDouble(implicit n: Numeric[T]): Tensor[Double] = this.map(x => n.toDouble(x))
 
   def shape: Seq[Int]
 
@@ -230,6 +229,11 @@ trait Tensor[T] {
 
   override def toString: String = toIterable.take(200).mkString("Tensor(", ",", "...)")
 
+  def diag(default: T): Tensor[T] = new DiagTensor[T](
+    shape = shape :+ shape.last,
+    tensor = this,
+    default = default)
+
 }
 
 object Tensor {
@@ -346,3 +350,16 @@ object IndexTensor {
   def apply(shape: Seq[Int]): Tensor[Seq[Int]] = new IndexTensor(shape)
 }
 
+object Rand {
+  def apply(shape: Int*): Tensor[Double] = {
+    val r = new Random()
+    EchoTensor(shape.toIndexedSeq).map(_ => r.nextDouble())
+  }
+}
+
+object Randn {
+  def apply(shape: Int*): Tensor[Double] = {
+    val r = new Random()
+    EchoTensor(shape.toIndexedSeq).map(_ => r.nextGaussian())
+  }
+}

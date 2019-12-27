@@ -91,6 +91,8 @@ object TensorImplicits {
 
     def abs: Tensor[T] = tensor.map(num.abs)
 
+    def toDouble: Tensor[Double] = tensor.map(x => num.toDouble(x))
+
   }
 
   implicit class NumericOps[T](x: T)(implicit num: Numeric[T]) {
