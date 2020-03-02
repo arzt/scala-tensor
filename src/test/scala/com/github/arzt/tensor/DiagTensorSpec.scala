@@ -24,11 +24,11 @@ class DiagTensorSpec extends Specification {
       tensor.shape === Vector(2, 2, 2)
     }
     "mapping" in {
-      DiagTensor.mapping(3, 3)(0) === 0
-      DiagTensor.mapping(3, 3)(1) === -1
-      DiagTensor.mapping(3, 3)(4) === 1
-      DiagTensor.mapping(3, 3)(8) === 2
-      DiagTensor.mapping(3, 3)(7) === -1
+      DiagTensor.mapping(3)(0) === 0
+      DiagTensor.mapping(3)(1) === -1
+      DiagTensor.mapping(3)(4) === 1
+      DiagTensor.mapping(3)(8) === 2
+      DiagTensor.mapping(3)(7) === -1
     }
   }
 }
