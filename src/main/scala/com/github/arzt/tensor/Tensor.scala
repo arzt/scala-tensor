@@ -344,16 +344,3 @@ object IndexTensor {
   def apply(shape: Seq[Int]): Tensor[Seq[Int]] = new IndexTensor(shape)
 }
 
-object Rand {
-  def apply(shape: Int*): Tensor[Double] = {
-    val r = new Random()
-    EchoTensor(shape.toIndexedSeq).map(_ => r.nextDouble())
-  }
-}
-
-object Randn {
-  def apply(shape: Int*): Tensor[Double] = {
-    val r = new Random()
-    EchoTensor(shape.toIndexedSeq).map(_ => r.nextGaussian())
-  }
-}
