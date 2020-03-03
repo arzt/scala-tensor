@@ -8,19 +8,17 @@ import com.github.arzt.tensor.image.ImageTool.fromImage
 import com.github.arzt.tensor.op.DoubleTensorMultiplication
 import com.github.arzt.tensor.op.FloatTensorMultiplication
 
-import scala.collection.compat.immutable.ArraySeq.unsafeWrapArray
 import scala.language.implicitConversions
 import scala.languageFeature.implicitConversions
-import scala.reflect.ClassTag
 
 object TensorImplicits {
 
-  case class WithOffset[T: ClassTag] private (data: Array[T], offset: Int) {
+  case class WithOffset[T] private (data: Array[T], offset: Int) {
     def asTensor(dim: Int*): Tensor[T] =
       Tensor[T](offset, data, dim: _*)
   }
 
-  implicit class ArrayOps[T: ClassTag](data: Array[T]) {
+  implicit class ArrayOps[T](data: Array[T]) {
 
     def asTensor(dim: Int*): Tensor[T] = Tensor(data, dim: _*)
 
@@ -75,24 +73,54 @@ object TensorImplicits {
         0
     }
 
-  implicit class NumericTensorOps[T: ClassTag](tensor: Tensor[T])(implicit num: Numeric[T]) {
+  implicit class NumericTensorOps[T](tensor: Tensor[T])(implicit num: Numeric[T]) {
 
     def +(a: T): Tensor[T] = tensor.map(num.plus(_, a))
 
     def +(a: Tensor[T]): Tensor[T] = tensor.combine[T, T](a, (x, y) => num.plus(x, y))
 
-    def -(a: T)(implicit num: Numeric[T]): Tensor[T] = tensor.map(num.minus(_, a))
+    def unary_- : Tensor[T] = tensor.map(num.negate)
 
-    def -(a: Tensor[T])(implicit num: Numeric[T]): Tensor[T] = tensor.combine[T, T](a, num.minus)
+    def -(a: T): Tensor[T] = tensor.map(num.minus(_, a))
+
+    def -(a: Tensor[T]): Tensor[T] = tensor.combine[T, T](a, num.minus)
 
     def *(a: T): Tensor[T] = tensor.map(x => num.times(x, a))
 
     def *(a: Tensor[T]): Tensor[T] = tensor.combine[T, T](a, num.times)
 
+    def abs: Tensor[T] = tensor.map(num.abs)
+
+    def toDouble: Tensor[Double] = tensor.map(x => num.toDouble(x))
+
   }
 
-  implicit class ConcatOps[T: ClassTag](tensor: Tensor[Tensor[T]]) {
-    def concatenate(): Tensor[T] = {
+  implicit class NumericOps[T](x: T)(implicit num: Numeric[T]) {
+
+    def +(y: Tensor[T]): Tensor[T] = y + x
+
+    def -(y: Tensor[T]): Tensor[T] = -y + x
+
+    def *(y: Tensor[T]): Tensor[T] = y * x
+
+  }
+
+  implicit class FractionalTensor[T](x: Tensor[T])(implicit frac: Fractional[T]) {
+
+    def /(y: Tensor[T]): Tensor[T] = x.combine(y, frac.div)
+
+    def /(y: T): Tensor[T] = x.map(frac.div(_, y))
+
+  }
+
+  implicit class FractionalOps[T](x: T)(implicit num: Fractional[T]) {
+
+    def /(y: Tensor[T]): Tensor[T] = y.map(num.div(x, _))
+
+  }
+
+  implicit class ConcatOps[T](tensor: Tensor[Tensor[T]]) {
+    def concat(): Tensor[T] = {
       val shape = MergeTensor.getShape[T](tensor)
       val (parentMap, childMap) = MergeTensor.getParentAndChildMap[T](tensor, shape)
       new MergeTensor[T](shape, tensor, parentMap, childMap)

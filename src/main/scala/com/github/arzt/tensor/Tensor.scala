@@ -10,10 +10,9 @@ import com.github.arzt.tensor.op.TensorMultiplication
 import scala.collection.compat.immutable.ArraySeq.unsafeWrapArray
 import scala.collection.immutable.Seq
 import scala.reflect.ClassTag
+import scala.util.Random
 
 trait Tensor[T] {
-
-  def toDouble(implicit n: Numeric[T]): Tensor[Double] = this.map(x => n.toDouble(x))
 
   def shape: Seq[Int]
 
@@ -33,10 +32,10 @@ trait Tensor[T] {
 
   def isView: Boolean
 
-  def cached(implicit tag: ClassTag[T]): ArrayTensor[T] =
+  def cached(implicit tag: ClassTag[T]): Tensor[T] =
     cached(new Array[T](length))
 
-  def cached(buf: Array[T], offset: Int = 0): ArrayTensor[T] = {
+  def cached(buf: Array[T], offset: Int = 0): Tensor[T] = {
     var i = 0
     while (i < length) {
       buf(i + offset) = this(i)
@@ -56,12 +55,12 @@ trait Tensor[T] {
     new ArrayTensor[T](shape, buf, offset)
   }
 
-  def cachedParallel(implicit tag: ClassTag[T]): ArrayTensor[T] =
+  def cachedParallel(implicit tag: ClassTag[T]): Tensor[T] =
     cached(new Array[T](length))
 
   def apply(a: Int): T
 
-  def update(a: Int, v: T): Unit // = throw new UnsupportedOperationException("Update not possible on view")
+  def update(a: Int, v: T): Unit = throw new UnsupportedOperationException("Update not implemented")
 
   def apply(is: Index*): Tensor[T] = {
     val list = shape
@@ -93,9 +92,9 @@ trait Tensor[T] {
 
   def :=(that: Tensor[T]): Unit = this() = that
 
-  def combine[B, R: ClassTag](that: Tensor[B], f: (T, B) => R): Tensor[R] = new CombineTensor[R, T, B](this, that, f)
+  def combine[B, R](that: Tensor[B], f: (T, B) => R): Tensor[R] = new CombineTensor[R, T, B](this, that, f)
 
-  def map[R: ClassTag](f: T => R): Tensor[R] = new MapTensor[T, R](this, f)
+  def map[R](f: T => R): Tensor[R] = new MapTensor[T, R](this, f)
 
   def ==(a: T): Tensor[Boolean] = this.map(_ == a)
 
@@ -213,12 +212,12 @@ trait Tensor[T] {
       }
   }
 
-  def inflate[U: ClassTag](implicit converter: Converter[T, U]): Tensor[U] = {
+  def inflate[U](implicit converter: Converter[T, U]): Tensor[U] = {
     val newShape = shape.updated(shape.indices.last, shape.last * converter.n)
     new InflateTensor[U, T](newShape, this)
   }
 
-  def deflate[U: ClassTag](implicit converter: Converter[U, T]): Tensor[U] = {
+  def deflate[U](implicit converter: Converter[U, T]): Tensor[U] = {
     val d = shape.last
     if (d % converter.n == 0) {
       val newShape = shape.updated(shape.indices.last, d / converter.n)
@@ -228,8 +227,17 @@ trait Tensor[T] {
     }
   }
 
-  override def toString: String = toIterable.mkString("Tensor(", ",", ")")
+  override def toString: String = toIterable.take(200).mkString("Tensor(", ",", "...)")
 
+  def diag(default: T): Tensor[T] = new DiagTensor[T](
+    shape = shape :+ shape.last,
+    tensor = this,
+    default = default)
+
+  def withRelaxedShape(length: Int): Tensor[T] = {
+    val newShapeIt = Iterator.fill(length - shape.length)(1) ++ shape
+    this.reshape(newShapeIt.toSeq: _*)
+  }
 }
 
 object Tensor {
@@ -237,14 +245,14 @@ object Tensor {
   def apply[T: ClassTag](shape: Int*): Tensor[T] =
     new ArrayTensor[T](shape.toVector, new Array[T](shape.product), 0)
 
-  def apply[T: ClassTag](data: Array[T], shape: Int*): Tensor[T] = {
+  def apply[T](data: Array[T], shape: Int*): Tensor[T] = {
     new ArrayTensor[T](if (shape.isEmpty) Vector(data.length) else shape.toVector, data, 0)
   }
 
-  def apply[T: ClassTag](offset: Int, data: Array[T]): Tensor[T] =
+  def apply[T](offset: Int, data: Array[T]): Tensor[T] =
     new ArrayTensor[T](Vector(data.length), data, offset)
 
-  def apply[T: ClassTag](offset: Int, data: Array[T], shape: Int*): Tensor[T] =
+  def apply[T](offset: Int, data: Array[T], shape: Int*): Tensor[T] =
     new ArrayTensor[T](shape.toVector, data, offset)
 
 }
@@ -266,8 +274,8 @@ class ArrayTensor[T] private[tensor] (
 
 }
 
-private class CombineTensor[T, A, B](ta: Tensor[A], tb: Tensor[B], f: (A, B) => T)(implicit val tag: ClassTag[T]) extends Tensor[T] {
-  require(ta.shape == tb.shape)
+private class CombineTensor[T, A, B](ta: Tensor[A], tb: Tensor[B], f: (A, B) => T) extends Tensor[T] {
+  assert(ta.shape == tb.shape)
 
   override def shape: Seq[Int] = ta.shape
 
@@ -275,19 +283,15 @@ private class CombineTensor[T, A, B](ta: Tensor[A], tb: Tensor[B], f: (A, B) => 
 
   override def apply(a: Int): T = f(ta(a), tb(a))
 
-  override def update(a: Int, v: T): Unit =
-    throw new UnsupportedOperationException("Update not supported on combined tensor view, call apply first")
 }
 
-private class MapTensor[T, R](tensor: Tensor[T], f: T => R)(implicit val tag: ClassTag[R]) extends Tensor[R] {
+private class MapTensor[T, R](tensor: Tensor[T], f: T => R) extends Tensor[R] {
   override def shape: Seq[Int] = tensor.shape
 
   override def apply(a: Int): R = f(tensor(a))
 
   override def isView = true
 
-  override def update(a: Int, v: R): Unit =
-    throw new UnsupportedOperationException("Update not supported on mapped tensor view, call apply first")
 }
 
 private class ViewTensor[T](val shape: Seq[Int], val tensor: Tensor[T], map: Int => Int) extends Tensor[T] {
@@ -318,9 +322,6 @@ class EchoTensor(val shape: Seq[Int]) extends Tensor[Int] {
 
   override def apply(a: Int): Int = a
 
-  override def update(a: Int, v: Int): Unit =
-    throw new UnsupportedOperationException("Update not supported on IndexTensor, call apply() first")
-
 }
 
 object EchoTensor {
@@ -336,9 +337,6 @@ private class IndexTensor(val shape: Seq[Int]) extends Tensor[Seq[Int]] {
     unindex(stride, output)(i)
     unsafeWrapArray(output)
   }
-
-  override def update(a: Int, v: Seq[Int]): Unit =
-    throw new UnsupportedOperationException("Update not supported on IndexTensor, call apply() first")
 
 }
 
