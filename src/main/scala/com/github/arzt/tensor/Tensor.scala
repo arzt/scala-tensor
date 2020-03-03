@@ -275,7 +275,7 @@ class ArrayTensor[T] private[tensor] (
 }
 
 private class CombineTensor[T, A, B](ta: Tensor[A], tb: Tensor[B], f: (A, B) => T) extends Tensor[T] {
-  require(ta.shape == tb.shape)
+  assert(ta.shape == tb.shape)
 
   override def shape: Seq[Int] = ta.shape
 
