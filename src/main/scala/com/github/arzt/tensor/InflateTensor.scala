@@ -2,10 +2,9 @@ package com.github.arzt.tensor
 
 import com.github.arzt.tensor.convert.Converter
 
-import scala.reflect.ClassTag
-import collection.immutable.Seq
+import scala.collection.immutable.Seq
 
-class InflateTensor[T, U](val shape: Seq[Int], val parent: Tensor[U])(implicit val tag: ClassTag[T], val convert: Converter[U, T]) extends Tensor[T] {
+class InflateTensor[T, U](val shape: Seq[Int], val parent: Tensor[U])(implicit val convert: Converter[U, T]) extends Tensor[T] {
 
   override def isView: Boolean = parent.isView
 
