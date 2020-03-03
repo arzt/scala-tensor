@@ -234,6 +234,10 @@ trait Tensor[T] {
     tensor = this,
     default = default)
 
+  def withRelaxedShape(length: Int): Tensor[T] = {
+    val newShapeIt = Iterator.fill(length - shape.length)(1) ++ shape
+    this.reshape(newShapeIt.toSeq: _*)
+  }
 }
 
 object Tensor {

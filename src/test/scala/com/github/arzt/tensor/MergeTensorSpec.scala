@@ -257,6 +257,11 @@ class MergeTensorSpec extends Specification {
         .concatenate()
       r === e
     }
+    "unmatching shape size" in {
+      val res = Array(EchoTensor(Vector(3)), EchoTensor(Vector(3))).asCol.concatenate()
+      res.shape(0) === 2
+      res.shape(1) === 3
+    }
   }
 
 }
