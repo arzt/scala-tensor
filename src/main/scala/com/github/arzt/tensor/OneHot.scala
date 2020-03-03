@@ -12,7 +12,6 @@ class OneHot[T](
 
   override def apply(a: Int): T = if (a == hot) one else zero
 
-  override def update(a: Int, v: T): Unit = throw new UnsupportedOperationException("update no supported")
 }
 
 object OneHot {

@@ -60,7 +60,7 @@ trait Tensor[T] {
 
   def apply(a: Int): T
 
-  def update(a: Int, v: T): Unit // = throw new UnsupportedOperationException("Update not possible on view")
+  def update(a: Int, v: T): Unit = throw new UnsupportedOperationException("Update not implemented")
 
   def apply(is: Index*): Tensor[T] = {
     val list = shape
@@ -283,8 +283,6 @@ private class CombineTensor[T, A, B](ta: Tensor[A], tb: Tensor[B], f: (A, B) => 
 
   override def apply(a: Int): T = f(ta(a), tb(a))
 
-  override def update(a: Int, v: T): Unit =
-    throw new UnsupportedOperationException("Update not supported on combined tensor view, call apply first")
 }
 
 private class MapTensor[T, R](tensor: Tensor[T], f: T => R) extends Tensor[R] {
@@ -294,8 +292,6 @@ private class MapTensor[T, R](tensor: Tensor[T], f: T => R) extends Tensor[R] {
 
   override def isView = true
 
-  override def update(a: Int, v: R): Unit =
-    throw new UnsupportedOperationException("Update not supported on mapped tensor view, call apply first")
 }
 
 private class ViewTensor[T](val shape: Seq[Int], val tensor: Tensor[T], map: Int => Int) extends Tensor[T] {
@@ -326,9 +322,6 @@ class EchoTensor(val shape: Seq[Int]) extends Tensor[Int] {
 
   override def apply(a: Int): Int = a
 
-  override def update(a: Int, v: Int): Unit =
-    throw new UnsupportedOperationException("Update not supported on IndexTensor, call apply() first")
-
 }
 
 object EchoTensor {
@@ -344,9 +337,6 @@ private class IndexTensor(val shape: Seq[Int]) extends Tensor[Seq[Int]] {
     unindex(stride, output)(i)
     unsafeWrapArray(output)
   }
-
-  override def update(a: Int, v: Seq[Int]): Unit =
-    throw new UnsupportedOperationException("Update not supported on IndexTensor, call apply() first")
 
 }
 

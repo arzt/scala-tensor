@@ -7,6 +7,4 @@ class ConstTensor[T](val shape: Seq[Int], value: T) extends Tensor[T] {
 
   override def apply(a: Int): T = value
 
-  override def update(a: Int, v: T): Unit =
-    throw new UnsupportedOperationException("update unsupported on const tensor")
 }

@@ -1,4 +1,5 @@
 package com.github.arzt.tensor
+
 import collection.immutable.Seq
 
 class DiagTensor[T](val shape: Seq[Int], tensor: Tensor[T], default: T) extends Tensor[T] {
@@ -17,8 +18,6 @@ class DiagTensor[T](val shape: Seq[Int], tensor: Tensor[T], default: T) extends 
       tensor(offset * shape.last + i)
   }
 
-  override def update(a: Int, v: T): Unit =
-    throw new UnsupportedOperationException("DiagTensor is not writable")
 }
 
 object DiagTensor {
