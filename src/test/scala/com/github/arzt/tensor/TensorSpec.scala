@@ -617,7 +617,7 @@ class TensorSpec extends Specification {
         2, 3,
         4, 5)
         .asRows(3)
-      result.concatenate() === exp
+      result.concat() === exp
     }
     "get data" in {
       val values = Array(1, 2, 3, 4)
