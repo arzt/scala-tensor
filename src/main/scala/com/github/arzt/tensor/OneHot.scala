@@ -15,8 +15,10 @@ class OneHot[T](
 }
 
 object OneHot {
+
   def apply[T](shape: Seq[Int], one: T, zero: T, hot: Int): Tensor[T] =
     new OneHot(shape, one, zero, hot)
 
   def ofDouble(shape: Seq[Int], hot: Int): Tensor[Double] = apply(shape, 1.0, 0.0, hot)
+
 }
