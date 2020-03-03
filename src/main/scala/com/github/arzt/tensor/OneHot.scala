@@ -2,10 +2,11 @@ package com.github.arzt.tensor
 
 import scala.collection.immutable.Seq
 
-class OneHot[T](val shape: Seq[Int],
-                val one: T,
-                val zero: T,
-                val hot: Int) extends Tensor[T] {
+class OneHot[T](
+    val shape: Seq[Int],
+    val one: T,
+    val zero: T,
+    val hot: Int) extends Tensor[T] {
 
   override def isView: Boolean = true
 

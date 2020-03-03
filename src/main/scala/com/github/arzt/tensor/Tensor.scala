@@ -32,10 +32,10 @@ trait Tensor[T] {
 
   def isView: Boolean
 
-  def cached(implicit tag: ClassTag[T]): ArrayTensor[T] =
+  def cached(implicit tag: ClassTag[T]): Tensor[T] =
     cached(new Array[T](length))
 
-  def cached(buf: Array[T], offset: Int = 0): ArrayTensor[T] = {
+  def cached(buf: Array[T], offset: Int = 0): Tensor[T] = {
     var i = 0
     while (i < length) {
       buf(i + offset) = this(i)
@@ -55,7 +55,7 @@ trait Tensor[T] {
     new ArrayTensor[T](shape, buf, offset)
   }
 
-  def cachedParallel(implicit tag: ClassTag[T]): ArrayTensor[T] =
+  def cachedParallel(implicit tag: ClassTag[T]): Tensor[T] =
     cached(new Array[T](length))
 
   def apply(a: Int): T
