@@ -127,6 +127,11 @@ object TensorImplicits {
     }
   }
 
+  implicit class AnyOpt[T](x: T) {
+    def constTensor(dim: Int*): Tensor[T] =
+      new ConstTensor[T](Vector(dim: _*), x)
+  }
+
   implicit def int2Index(i: Int): Index =
     n => List(positiveMod(n)(i))
 
