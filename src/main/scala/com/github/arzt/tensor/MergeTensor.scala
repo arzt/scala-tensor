@@ -26,7 +26,7 @@ private class MergeTensor[T](
 object MergeTensor {
 
   private[tensor] def getShape[T](t: Tensor[Tensor[T]]): Seq[Int] = {
-    val shapes = t.map(_.withRelaxedShape(t.shape.length).shape)
+    val shapes = t.map(_.shape)
     val n = t.shape.length
     (0 until n)
       .foldLeft(shapes) {
