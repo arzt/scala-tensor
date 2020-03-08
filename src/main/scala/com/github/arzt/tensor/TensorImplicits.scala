@@ -120,10 +120,23 @@ object TensorImplicits {
   }
 
   implicit class ConcatOps[T](tensor: Tensor[Tensor[T]]) {
+
+    def withCompatibleShapes: Tensor[Tensor[T]] = {
+      val commonLength = math.max(tensor.shape.length, tensor.apply(0).shape.length)
+      if (tensor.shape.length < commonLength) {
+        tensor.withRelaxedShape(commonLength).withCompatibleShapes
+      } else if (tensor(0).shape.length < commonLength) {
+        tensor.map(_.withRelaxedShape(commonLength)).withCompatibleShapes
+      } else {
+        tensor
+      }
+    }
+
     def concat(): Tensor[T] = {
-      val shape = MergeTensor.getShape[T](tensor)
-      val (parentMap, childMap) = MergeTensor.getParentAndChildMap[T](tensor, shape)
-      new MergeTensor[T](shape, tensor, parentMap, childMap)
+      val t = tensor.withCompatibleShapes
+      val shape = MergeTensor.getShape[T](t)
+      val (parentMap, childMap) = MergeTensor.getParentAndChildMap[T](t, shape)
+      new MergeTensor[T](shape, t, parentMap, childMap)
     }
   }
 

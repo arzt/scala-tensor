@@ -262,6 +262,11 @@ class MergeTensorSpec extends Specification {
       res.shape(0) === 2
       res.shape(1) === 3
     }
+    "simple test" in {
+      val in = Array(2.constTensor(2, 1), 2.constTensor(2, 1)).asRow
+      val a = in.concat()
+      a === 2.constTensor(2, 2)
+    }
   }
 
 }
