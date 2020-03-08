@@ -134,16 +134,19 @@ trait Tensor[T] {
   def t: Tensor[T] = this match {
     case x: TransposeTensor[T] =>
       x.tensor
-    case _ => {
-      val n = shape.length - 1
-      val pi = shape.indices.toArray
-      val tmp = pi(n)
-      pi(n) = pi(n - 1)
-      pi(n - 1) = tmp
-      val newShape = shape.indices.map(pi andThen shape)
-      val mapping = permuteMapping(pi, stride, newShape)
-      new TransposeTensor[T](newShape, this, mapping)
-    }
+    case _ =>
+      if (shape.length == 1) {
+        this.reshape(1 +: shape: _*).t
+      } else {
+        val n = shape.length - 1
+        val pi = shape.indices.toArray
+        val tmp = pi(n)
+        pi(n) = pi(n - 1)
+        pi(n - 1) = tmp
+        val newShape = shape.indices.map(pi andThen shape)
+        val mapping = permuteMapping(pi, stride, newShape)
+        new TransposeTensor[T](newShape, this, mapping)
+      }
   }
 
   def getData(implicit tag: ClassTag[T]): Array[T] =
