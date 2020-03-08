@@ -414,6 +414,9 @@ class TensorSpec extends Specification {
       tensor.t === expected
       tensor.t.t === tensor
     }
+    "transpose row vector" in {
+      1.constTensor(4).t === Array(1, 1, 1, 1).asCol
+    }
     "mmul" in {
       val a =
         Array[Double](3, 2, 1)
