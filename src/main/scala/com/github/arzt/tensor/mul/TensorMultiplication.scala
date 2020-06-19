@@ -1,25 +1,18 @@
-package com.github.arzt.tensor.op
+package com.github.arzt.tensor.mul
 
-import com.github.arzt.tensor.ArrayTensor
-import com.github.arzt.tensor.MyBLAS
-import com.github.arzt.tensor.Tensor
-import com.github.arzt.tensor.TensorImplicits.getOffset
-import com.github.arzt.tensor.TensorImplicits.getOp
-import org.jblas.NativeBlas.dgemm
-import org.jblas.NativeBlas.sgemm
+import com.github.arzt.math.JavaBlas
+import com.github.arzt.tensor.TensorImplicits.{ getOffset, getOp }
+import com.github.arzt.tensor.{ ArrayTensor, Tensor }
+import org.jblas.NativeBlas.{ dgemm, sgemm }
 
 import scala.reflect.ClassTag
 
 trait TensorMultiplication[T] {
 
-  implicit val tag: ClassTag[T]
-
   def apply(a: Tensor[T], b: Tensor[T], c: ArrayTensor[T]): Unit
 }
 
 object JavaDoubleTensorMultiplication extends TensorMultiplication[Double] {
-
-  implicit val tag = ClassTag.Double
 
   override def apply(a: Tensor[Double], b: Tensor[Double], c: ArrayTensor[Double]): Unit = {
     val n = a.shape.length
@@ -41,7 +34,7 @@ object JavaDoubleTensorMultiplication extends TensorMultiplication[Double] {
     var CO = c.offset
     var i = 0
     while (i < num) {
-      MyBLAS.dgemmJava(opA, opB, M, N, K, A, AO, B, BO, C, CO)
+      JavaBlas.dgemm(opA, opB, M, N, K, A, AO, B, BO, C, CO)
       AO += M * K
       BO += K * N
       CO += M * N
@@ -51,8 +44,6 @@ object JavaDoubleTensorMultiplication extends TensorMultiplication[Double] {
 }
 
 object DoubleTensorMultiplication extends TensorMultiplication[Double] {
-
-  implicit val tag = ClassTag.Double
 
   override def apply(a: Tensor[Double], b: Tensor[Double], c: ArrayTensor[Double]): Unit = {
     val n = a.shape.length
@@ -85,8 +76,6 @@ object DoubleTensorMultiplication extends TensorMultiplication[Double] {
 }
 
 object FloatTensorMultiplication extends TensorMultiplication[Float] {
-
-  implicit val tag = ClassTag.Float
 
   override def apply(a: Tensor[Float], b: Tensor[Float], c: ArrayTensor[Float]): Unit = {
     val n = a.shape.length
