@@ -5,8 +5,9 @@ import java.awt.image.BufferedImage
 import com.github.arzt.math.positiveMod
 import com.github.arzt.tensor.image.ImageTool
 import com.github.arzt.tensor.image.ImageTool.fromImage
-import com.github.arzt.tensor.op.DoubleTensorMultiplication
-import com.github.arzt.tensor.op.FloatTensorMultiplication
+import com.github.arzt.tensor.mul.DoubleTensorMultiplication
+import com.github.arzt.tensor.mul.FloatTensorMultiplication
+import com.github.arzt.tensor.mul.JavaDoubleTensorMultiplication
 
 import scala.language.implicitConversions
 import scala.languageFeature.implicitConversions
@@ -186,7 +187,10 @@ object TensorImplicits {
     def asTensor: Tensor[Byte] = fromImage(image)
   }
 
-  implicit val dtM = DoubleTensorMultiplication
+  implicit val dtM = {
+    DoubleTensorMultiplication
+    JavaDoubleTensorMultiplication
+  }
 
   implicit val ftM = FloatTensorMultiplication
 

@@ -1,9 +1,9 @@
-package com.github.arzt.tensor
+package com.github.arzt.math
 
 import com.github.arzt.tensor.TensorImplicits._
 import org.specs2.mutable.Specification
 
-class MyBlasSpec extends Specification {
+class JavaBlasSpec extends Specification {
 
   "dgemm" should {
     "compute matrix mul" in {
@@ -27,7 +27,7 @@ class MyBlasSpec extends Specification {
 
       val ct = at ** bt
 
-      MyBLAS.dgemmJava('n', 'n', m, n, k, a, ao, b, bo, c, co)
+      JavaBlas.dgemm('n', 'n', m, n, k, a, ao, b, bo, c, co)
       val c2t = c.asTensor(2, 2)
       ct === c2t
     }

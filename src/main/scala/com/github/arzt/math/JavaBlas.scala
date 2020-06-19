@@ -1,8 +1,8 @@
-package com.github.arzt.tensor
+package com.github.arzt.math
 
-private[tensor] object MyBLAS {
+object JavaBlas {
 
-  def dgemmJava(
+  def dgemm(
     aOp: Char,
     bOp: Char,
     m: Int,
