@@ -5,7 +5,7 @@ import java.util.stream.IntStream
 
 import com.github.arzt.tensor.convert.Converter
 import com.github.arzt.tensor.dim.Dim
-import com.github.arzt.tensor.op.TensorMultiplication
+import com.github.arzt.tensor.mul.TensorMultiplication
 
 import scala.collection.compat.immutable.ArraySeq.unsafeWrapArray
 import scala.collection.immutable.Seq
@@ -105,8 +105,7 @@ trait Tensor[T] {
   def sameElements(that: Iterable[T]): Boolean =
     this.toIterable.iterator.sameElements(that.iterator)
 
-  def **(b: Tensor[T])(implicit m: TensorMultiplication[T]): Tensor[T] = {
-    import m.tag
+  def **(b: Tensor[T])(implicit m: TensorMultiplication[T], tag: ClassTag[T]): Tensor[T] = {
     val n = this.shape.length
     val outShape = this.shape.updated(n - 1, b.shape.last)
     val C = new Array[T](outShape.product)
@@ -151,21 +150,12 @@ trait Tensor[T] {
 
   def getData(implicit tag: ClassTag[T]): Array[T] =
     this match {
-      case array: ArrayTensor[T] =>
-        array.getData
+      case _: ArrayTensor[T] =>
+        getData
       case transpose: TransposeTensor[T] =>
-        transpose.tensor match {
-          case array2: ArrayTensor[T] =>
-            array2.getData
-          case _ =>
-            transpose
-              .cached
-              .getData
-        }
+        transpose.tensor.getData
       case _ =>
-        this
-          .cached
-          .getData
+        this.cached.getData
     }
 
   def reshape(newShape: Int*): Tensor[T] = {
