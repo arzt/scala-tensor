@@ -56,7 +56,7 @@ trait Tensor[T] {
   }
 
   def cachedParallel(implicit tag: ClassTag[T]): Tensor[T] =
-    cached(new Array[T](length))
+    cachedParallel(new Array[T](length))
 
   def apply(a: Int): T
 
