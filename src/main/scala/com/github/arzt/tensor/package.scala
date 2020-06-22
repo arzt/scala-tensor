@@ -33,7 +33,7 @@ package object tensor {
     }
   }
 
-  private[tensor] def toStride(dim: Array[Int]): Array[Int] = dim.scanRight(1)(_ * _).tail
+  private[tensor] def toStride(dim: collection.Seq[Int]): Array[Int] = dim.scanRight(1)(_ * _).tail.toArray
 
   private[tensor] def invert(size: Int, fun: Int => Int): Int => Int = {
     val inverse = new Array[Int](size)
