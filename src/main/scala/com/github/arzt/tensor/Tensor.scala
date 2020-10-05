@@ -102,8 +102,9 @@ trait Tensor[T] {
 
   def toIterable: Iterable[T] = (0 until length).view.map(this.apply)
 
-  def sameElements(that: Iterable[T]): Boolean =
-    this.toIterable.iterator.sameElements(that.iterator)
+  def sameElements(that: Iterable[T]): Boolean = this.toIterable.iterator.sameElements(that.iterator)
+
+  def sameElements(that: Tensor[T]): Boolean = sameElements(that.toIterable)
 
   def **(b: Tensor[T])(implicit m: TensorMultiplication[T], tag: ClassTag[T]): Tensor[T] = {
     val n = this.shape.length
@@ -249,7 +250,8 @@ class ArrayTensor[T] private[tensor] (
     private val data: Array[T],
     val offset: Int = 0) extends Tensor[T] {
 
-  override def apply(a: Int): T = data(offset + a)
+  override def apply(a: Int): T =
+    data(offset + a)
 
   override def update(a: Int, v: T): Unit = data(offset + a) = v
 
