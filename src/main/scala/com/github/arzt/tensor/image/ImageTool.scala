@@ -4,7 +4,10 @@ package image
 import java.awt.image.BufferedImage
 import java.awt.image.DataBuffer
 import java.awt.image.DataBufferByte
+import java.awt.image.DataBufferInt
 import java.lang.Double.longBitsToDouble
+
+import com.github.arzt.tensor.convert.implicits.intToByte
 
 object ImageTool {
 
@@ -13,6 +16,9 @@ object ImageTool {
       case bb: DataBufferByte =>
         val data = bb.getBankData()(0)
         new ArrayTensor[Byte](Vector(bb.getSize), data)
+      case bb: DataBufferInt =>
+        val data = bb.getBankData()(0)
+        new ArrayTensor[Int](Vector(bb.getSize), data).inflate[Byte]
       case _ =>
         import convert.implicits._
         val data = (0 until buffer.getSize).map(buffer.getElemDouble).toArray
@@ -27,27 +33,28 @@ object ImageTool {
       case bb: DataBufferByte =>
         val data = bb.getBankData()(0)
         tensor.cached(data)
-        buffer
+      case bb: DataBufferInt =>
+        val data = bb.getBankData()(0)
+        tensor.deflate[Int].cached(data)
       case _ =>
         import convert.implicits._
-        val values = tensor.deflate[Long].map(longBitsToDouble)
+        val values = tensor.reshape(tensor.length).deflate[Long].map(longBitsToDouble)
         var i = 0
         val valueIterator = values.toIterable.iterator
         while (i < buffer.getSize) {
           buffer.setElemDouble(i, valueIterator.next())
           i += 1
         }
-        buffer
     }
+    buffer
   }
 
   def fromImage(image: BufferedImage): Tensor[Byte] = {
     val buffer = image.getRaster.getDataBuffer
-    dataBufferToBytes(buffer)
-      .reshape(
-        image.getHeight,
-        image.getWidth,
-        image.getColorModel.getNumComponents)
+    val height = image.getHeight
+    val width = image.getWidth
+    val components = image.getColorModel.getNumComponents
+    dataBufferToBytes(buffer).reshape(height, width, components)
   }
 
   def writeImage(image: BufferedImage, tensor: Tensor[Byte]): BufferedImage = {
