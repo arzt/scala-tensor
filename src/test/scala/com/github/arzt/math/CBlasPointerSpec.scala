@@ -5,6 +5,7 @@ import com.sun.jna.Memory
 import org.specs2.mutable.Specification
 
 class CBlasPointerSpec extends Specification {
+
   "CBlas" should {
     val M = 3
     val N = 4
@@ -20,7 +21,7 @@ class CBlasPointerSpec extends Specification {
       -5, 2, -3, -2,
       -2, 0, -2, 4,
       -8, 3, -5, -2)
-    "dgemm col major" in {
+    "dgemm col major" in skipped {
       val A_ = A.asRows(3).t.toIterable.toArray
       val B_ = B.asRows(2).t.toIterable.toArray
       val C_ = C.asRows(3).t.toIterable.toArray
@@ -46,7 +47,7 @@ class CBlasPointerSpec extends Specification {
       D_mem.read(0, D, 0, D.length)
       D.toSeq === C_.toSeq
     }
-    "gemm row major pointer" in {
+    "gemm row major pointer" in skipped {
       val D = new Array[Double](M * N)
       val A_mem = new Memory(A.length * 8)
       val B_mem = new Memory(B.length * 8)
