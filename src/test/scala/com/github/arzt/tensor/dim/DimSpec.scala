@@ -1,12 +1,13 @@
 package com.github.arzt.tensor.dim
 
-import org.specs2.mutable.Specification
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.should.Matchers
 
 import scala.collection.compat.immutable.ArraySeq
 import scala.collection.immutable.Seq
 
-class DimSpec extends Specification {
-  "Dimension" should {
+class DimSpec extends AnyFreeSpec with Matchers {
+  "Dimension should" - {
     "Single" in {
       val d = Dim(3)
       d.shape === List(3)

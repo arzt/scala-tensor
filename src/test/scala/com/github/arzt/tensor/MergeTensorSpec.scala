@@ -2,11 +2,12 @@ package com.github.arzt.tensor
 
 import com.github.arzt.tensor.MergeTensor._
 import com.github.arzt.tensor.TensorImplicits._
-import org.specs2.mutable.Specification
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.should.Matchers
 
-class MergeTensorSpec extends Specification {
+class MergeTensorSpec extends AnyFreeSpec with Matchers {
 
-  "Merge tensor" should {
+  "Merge tensor should" - {
     "compute shape dim 1" in {
       val a = Tensor[Int](2, 2)
       val b = Tensor[Int](3, 2)
@@ -242,19 +243,6 @@ class MergeTensorSpec extends Specification {
         .asTensor(1, 2, 2)
       val shape = MergeTensor.getShape(t)
       val r = t.concat()
-      r === e
-    }
-    "advanced 3D test" in skipped {
-      val e = EchoTensor(Vector(3, 3, 3))
-      val t = Array(
-        e(0 :: 1, 0 :: 1, 0 :: 1), e(0 :: 0, 0 :: 0, 2 :: 2),
-        e(0 :: 0, 2 :: 2, 0 :: 1), e(0 :: 0, 1 :: 2, 2 :: 2),
-
-        e(2 :: 2, 1 :: 2, 1 :: 2), e(1 :: 2, 0 :: 1, 2 :: 2),
-        e(1 :: 2, 2 :: 2, 0 :: 0), e(1 :: 2, 2 :: 2, 1 :: 2))
-        .asTensor(2, 2, 2)
-      val r = t
-        .concat()
       r === e
     }
     "unmatching shape size" in {

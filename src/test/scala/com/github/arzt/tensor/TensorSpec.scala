@@ -2,13 +2,14 @@ package com.github.arzt.tensor
 
 import com.github.arzt.tensor.TensorImplicits._
 import com.github.arzt.tensor.convert.LongToIntConverter
-import org.specs2.mutable.Specification
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.should.Matchers
 
-import scala.util.Random
 import scala.collection.immutable.Seq
+import scala.util.Random
 
-class TensorSpec extends Specification {
-  "Tensors" should {
+class TensorSpec extends AnyFreeSpec with Matchers {
+  "Tensors should" - {
     "read elements by index" in {
       val data = Array[Int](0, 1, 2, 3, 4, 5, 6, 7)
       val t1 = Tensor(data, 2, 4)
@@ -166,7 +167,7 @@ class TensorSpec extends Specification {
       a === e
     }
     "fail on wrong shape " in {
-      new ArrayTensor(Vector(-1), Array[Int]()) must throwA[IllegalArgumentException]
+      an[IllegalArgumentException] should be thrownBy new ArrayTensor(Vector(-1), Array[Int]())
     }
     "create vector" in {
       val t = Tensor(Array(1, 2, 3))
@@ -194,7 +195,7 @@ class TensorSpec extends Specification {
       val t = Array(1).asRow.map(_.toString)
       t(0) === "1"
       t.isView === true
-      (t(0) = Tensor(Array("test"))) must throwA[UnsupportedOperationException]
+      an[UnsupportedOperationException] should be thrownBy (t(0) = Tensor(Array("test")))
     }
     "support addition" in {
       val t = Tensor(Array(1, 2, 3, 4, 5, 6, 7, 8, 9))
@@ -330,7 +331,7 @@ class TensorSpec extends Specification {
       val a2 = Array(1, 2, 3, 4).asRow
       val b2 = Array(1, 2, 3, 4).asRow
       (a2 + b2).isView === true
-      ((a2 + b2)(0) = 5) must throwAn[UnsupportedOperationException]
+      an[UnsupportedOperationException] should be thrownBy ((a2 + b2)(0) = 5)
       (a2 + b2) === Array(2, 4, 6, 8).asRow
       (a2 - b2) === Array(0, 0, 0, 0).asRow
       (a2 * b2) === Array(1, 4, 9, 16).asRow
@@ -508,28 +509,12 @@ class TensorSpec extends Specification {
           .asRows(2)
       expected === c
     }
-    "single precision mmul" in skipped {
-      val a =
-        Array[Float](1, 2,
-          4, 5)
-          .asRows(2)
-      val b =
-        Array[Float](1, 0,
-          0, 1)
-          .asRows(2)
-      val c = a.t ** b
-      val expected =
-        Array[Float](1, 4,
-          2, 5)
-          .asRows(2)
-      expected === c
-    }
     "reshape" in {
       val data = Array(1, 2)
       val x = data.asRow
       val in = x.reshape(2, 1)
       in === Array(1, 2).asCol
-      x.reshape(5) must throwA[IllegalArgumentException]
+      an[IllegalArgumentException] should be thrownBy x.reshape(5)
       x.asCol() === Array(1, 2).asCol
       x.asCol().asRow === Array(1, 2).asRow
       in.isView === true
@@ -541,7 +526,7 @@ class TensorSpec extends Specification {
         1, 2, 3)
         .asTensor(1, 3, 1)
       t.dropSingular(2).shape === Seq(1, 3)
-      t.dropSingular(1) must throwA[IllegalArgumentException]
+      an[IllegalArgumentException] should be thrownBy t.dropSingular(1)
     }
     "add singular dimension" in {
       val t = Array(1, 2, 3, 4).asCols(2).addSingular(1)
@@ -627,7 +612,7 @@ class TensorSpec extends Specification {
       values.asRows(2).getData.sameElements(values)
     }
   }
-  "inflate from long to int" should {
+  "inflate from long to int should" - {
     "produce correct values" in {
       implicit val c = new LongToIntConverter
 
@@ -638,7 +623,7 @@ class TensorSpec extends Specification {
       tensor.sameElements(Seq(0, 1, 0, 2, 0, 3, 0, 4))
     }
   }
-  "deflate" should {
+  "deflate should" - {
     "deflate" in {
       implicit val c: LongToIntConverter = new LongToIntConverter
       def rand = Random.nextLong()
@@ -650,7 +635,7 @@ class TensorSpec extends Specification {
     }
     "throw exception if size is not compatible with type" in {
       import convert.implicits.longToInt
-      Array(0).asRow.deflate[Long] should throwA[IllegalArgumentException]
+      an[IllegalArgumentException] should be thrownBy Array(0).asRow.deflate[Long]
     }
   }
 }

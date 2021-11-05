@@ -1,9 +1,10 @@
 package com.github.arzt.math
 
-import org.specs2.mutable.Specification
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.should.Matchers
 
-class MathSpec extends Specification {
-  "positive mod" should {
+class MathSpec extends AnyFreeSpec with Matchers {
+  "positive mod should" - {
     "always compute positive modulus" in {
       val mod = positiveMod(4)(_)
       mod(3) === 3
@@ -13,7 +14,7 @@ class MathSpec extends Specification {
       mod(-41) === 3
     }
   }
-  "unsigned" should {
+  "unsigned should" - {
     "compute unsigned value as int" in {
       asUnsignedInteger(8)(0) === 0
       asUnsignedInteger(8)(100) === 100

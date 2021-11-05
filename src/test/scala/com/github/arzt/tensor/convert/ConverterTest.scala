@@ -1,11 +1,12 @@
 package com.github.arzt.tensor.convert
 
-import org.specs2.mutable.Specification
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.should.Matchers
 
 import scala.util.Random
 
-class ConverterTest extends Specification {
-  "long int converter" should {
+class ConverterTest extends AnyFreeSpec with Matchers {
+  "long int converter should" - {
     "test endianess" in {
       val c = new LongToIntConverter
       val r = new Random()
@@ -24,7 +25,7 @@ class ConverterTest extends Specification {
       c.read(result, 1) shouldEqual b
     }
   }
-  "long byte converter" should {
+  "long byte converter should" - {
     "convert long to bytes and vice versa" in {
       val converter = new LongToByteConverter
       val r = new Random()
@@ -40,7 +41,7 @@ class ConverterTest extends Specification {
         }
     }
   }
-  "int byte converter" should {
+  "int byte converter should" - {
     "converts int to bytes and vice versa" in {
       val converter = new IntToByteConverter
       val r = new Random(5)
@@ -57,7 +58,7 @@ class ConverterTest extends Specification {
         }
     }
   }
-  "byte boolean converter" should {
+  "byte boolean converter should" - {
     "converts byte to booleans and vice versa" in {
       val converter = new ByteToBooleanConverter
       val r = new Random(4)

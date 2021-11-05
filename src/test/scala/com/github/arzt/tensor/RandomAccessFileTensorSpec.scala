@@ -1,15 +1,15 @@
 package com.github.arzt.tensor
 
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.should.Matchers
+
 import java.io.RandomAccessFile
 import java.nio.file.Files
-
-import org.specs2.mutable.Specification
-
 import scala.util.Random
 
-class RandomAccessFileTensorSpec extends Specification {
+class RandomAccessFileTensorSpec extends AnyFreeSpec with Matchers {
 
-  "Random access file tensor" should {
+  "Random access file tensor should" - {
     "read files as tensor" in {
       val tmpFile = Files.createTempFile("tmp-file", null)
 

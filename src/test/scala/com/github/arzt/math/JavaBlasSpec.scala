@@ -1,11 +1,12 @@
 package com.github.arzt.math
 
 import com.github.arzt.tensor.TensorImplicits._
-import org.specs2.mutable.Specification
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.should.Matchers
 
-class JavaBlasSpec extends Specification {
+class JavaBlasSpec extends AnyFreeSpec with Matchers {
 
-  "dgemm" should {
+  "dgemm should" - {
     "compute matrix mul" in {
       val m = 2
       val n = 2

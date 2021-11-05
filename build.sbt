@@ -17,7 +17,7 @@ organization := "com.github"
 scalaVersion := "2.13.1"
 
 libraryDependencies ++= Seq(
-  "org.specs2" %% "specs2-core" % "4.6.0" % "test",
+  "org.scalatest" %% "scalatest" % "3.2.10" % "test",
   "org.jblas" % "jblas" % "1.2.4",
   "org.scala-lang.modules" %% "scala-collection-compat" % "2.1.2",
   "net.java.dev.jna" % "jna" % "5.5.0",

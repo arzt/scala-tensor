@@ -1,10 +1,10 @@
 package com.github.arzt.tensor
 
-import org.specs2.mutable.Specification
-import TensorImplicits._
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.should.Matchers
 
-class DiagTensorSpec extends Specification {
-  "diag tensor" should {
+class DiagTensorSpec extends AnyFreeSpec with Matchers {
+  "diag tensor should" - {
     "work" in {
       val tensor = Tensor(0, Array[Double](1, 2, 3)).diag(0)
       tensor.sameElements(Array[Double](
