@@ -24,7 +24,7 @@ libraryDependencies ++= Seq(
   "net.java.dev.jna" % "jna-platform" % "5.5.0"
 )
 
-crossScalaVersions := List("2.13.1", "2.12.10", "2.11.12")
+crossScalaVersions := List("2.13.7", "2.12.15", "2.11.12")
 
 scalariformPreferences := scalariformPreferences.value
   .setPreference(DoubleIndentConstructorArguments, true)
