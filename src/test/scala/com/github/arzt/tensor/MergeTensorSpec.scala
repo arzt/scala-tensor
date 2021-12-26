@@ -2,6 +2,7 @@ package com.github.arzt.tensor
 
 import com.github.arzt.tensor.MergeTensor._
 import com.github.arzt.tensor.TensorImplicits._
+import TensorImplicits.All
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -51,8 +52,8 @@ class MergeTensorSpec extends AnyFreeSpec with Matchers {
         Array(
           1, 2, 3, 4,
           5, 6, 7, 8).asRows(2)
-      val a = res(::, 0 until 2)
-      val b = res(::, 2 until 4)
+      val a = res(All, 0 until 2)
+      val b = res(All, 2 until 4)
       val c = Array(a, b).asRows(1)
       val ints = MergeTensor.getShape(c)
       val parentMap =
@@ -71,8 +72,8 @@ class MergeTensorSpec extends AnyFreeSpec with Matchers {
         Array(
           1, 2, 3, 4,
           5, 6, 7, 8).asRows(2)
-      val a = res(0, ::)
-      val b = res(1, ::)
+      val a = res(0, All)
+      val b = res(1, All)
       val c = Array(a, b).asCols(1)
       val ints = MergeTensor.getShape(c)
       val parentMap =
@@ -91,8 +92,8 @@ class MergeTensorSpec extends AnyFreeSpec with Matchers {
         Array(
           1, 2, 3, 4,
           5, 6, 7, 8).asRows(2)
-      val a = res(::, 0 until 2)
-      val b = res(::, 2 until 4)
+      val a = res(All, 0 until 2)
+      val b = res(All, 2 until 4)
       val c = Array(a, b).asRows(1)
       val (parent, child) = MergeTensor.getParentAndChildMap(c, getShape(c))
       parent.toSeq === Seq(0, 0, 1, 1, 0, 0, 1, 1)
@@ -103,8 +104,8 @@ class MergeTensorSpec extends AnyFreeSpec with Matchers {
         Array(
           1, 2, 3, 4,
           5, 6, 7, 8).asRows(2)
-      val a = res(0, ::)
-      val b = res(1, ::)
+      val a = res(0, All)
+      val b = res(1, All)
       val c = Array(a, b).asCols(1)
       val (parent, child) = MergeTensor.getParentAndChildMap(c, getShape(c))
       child.toSeq === Seq(0, 1, 2, 3, 0, 1, 2, 3)
@@ -115,8 +116,8 @@ class MergeTensorSpec extends AnyFreeSpec with Matchers {
         Array(
           1, 2, 3, 4,
           5, 6, 7, 8).asRows(2)
-      val a = res(::, 0 until 3)
-      val b = res(::, 3)
+      val a = res(All, 0 until 3)
+      val b = res(All, 3)
       val c = Array(a, b).asRows(1)
       val (parent, child) = MergeTensor.getParentAndChildMap(c, getShape(c))
       child.toSeq === Seq(0, 1, 2, 0, 3, 4, 5, 1)

@@ -48,7 +48,7 @@ class TensorSpec extends AnyFreeSpec with Matchers {
         5, 6,
         7, 8)
         .asTensor(2, 2, 1, 2)
-      val b = t(::, ::, ::, ::)
+      val b = t(All, All, All, All)
       t(0, 0, 0, 0)(0) === 1
       t(0, 1, 0, 1)(0) === 4
       t(1, 1, 0, 1)(0) === 8
@@ -117,7 +117,7 @@ class TensorSpec extends AnyFreeSpec with Matchers {
       val a = Array(1, 0,
         0, 4,
         5, 6).asTensor(3, 1, 2)
-      a(1, ::, ::) = Array(4, 6).asTensor(1, 1, 2)
+      a(1, All, All) = Array(4, 6).asTensor(1, 1, 2)
       a === Array(1, 0, 4, 6, 5, 6).asTensor(3, 1, 2)
     }
     "copy sub-tensors" in {
@@ -174,22 +174,22 @@ class TensorSpec extends AnyFreeSpec with Matchers {
       t.sameElements(Seq(1, 2, 3))
     }
     "read nrows and ncols" in {
-      val t = Tensor(3, 4)
+      val t = Tensor[Int](3, 4)
       t.cols === 4
       t.rows === 3
     }
     "read isMatrix isVector" in {
-      val vec = Tensor(4)
+      val vec = Tensor[Any](4)
       vec.isMatrix === false
       vec.isVector === true
-      val mat = Tensor(4, 4)
+      val mat = Tensor[Any](4, 4)
       mat.isVector === false
       mat.isMatrix === true
     }
     "support stepped indexing" in {
       val t = Tensor(Array(0, 1, 2, 3, 4, 5, 6, 7, 8))
       t(1 until 8 by 3).sameElements(Seq(1, 4, 7))
-      t(::).isView === true
+      t(All).isView === true
     }
     "mapping" in {
       val t = Array(1).asRow.map(_.toString)
@@ -240,7 +240,7 @@ class TensorSpec extends AnyFreeSpec with Matchers {
         Array(0, 1, 0, 1,
           4, 5, 6, 7)
           .asTensor(2, 4)
-      val idx = t(0, ::) == 1
+      val idx = t(0, All) == 1
       val r = t(1, idx).equals(Array(5, 7).asTensor(2))
       r === true
     }
@@ -266,14 +266,14 @@ class TensorSpec extends AnyFreeSpec with Matchers {
     }
     "reverse" in {
       val t = Array(1, 2, 3, 4).asRow
-      t(-::) === Array(4, 3, 2, 1).asRow
+      t(Reverse) === Array(4, 3, 2, 1).asRow
     }
     "reverse 2D" in {
       val t =
         Array(1, 2,
           3, 4)
           .asRows(2)
-      t(::, -::) ===
+      t(All, Reverse) ===
         Array(2, 1,
           4, 3)
         .asRows(2)
@@ -288,7 +288,7 @@ class TensorSpec extends AnyFreeSpec with Matchers {
           5,
           6)
           .asTensor(3, 2, 1)
-          .apply(-::, ::, ::)
+          .apply(Reverse, All, All)
       val expected =
         Array(
           5,
@@ -318,7 +318,7 @@ class TensorSpec extends AnyFreeSpec with Matchers {
     }
     "test" in {
       val t = Array(1, 2, 3, 4).asRow
-      val b = t(::)
+      val b = t(All)
       t === b
     }
     "numeric operations" in {
@@ -516,7 +516,7 @@ class TensorSpec extends AnyFreeSpec with Matchers {
       in === Array(1, 2).asCol
       an[IllegalArgumentException] should be thrownBy x.reshape(5)
       x.asCol() === Array(1, 2).asCol
-      x.asCol().asRow === Array(1, 2).asRow
+      x.asCol().asRow() === Array(1, 2).asRow
       in.isView === true
       in(0) = 5
       in(0) === 5

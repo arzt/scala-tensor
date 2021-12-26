@@ -8,23 +8,22 @@ scalacOptions ++= Seq(
   "-unchecked",
   "-deprecation",
   "-feature",
-  "-language:implicitConversions",
-  "-target:jvm-1.8" //needed for scala 2.11
+  "-language:implicitConversions"
 )
 
 organization := "com.github"
 
-scalaVersion := "2.13.1"
+scalaVersion := "3.1.0"
 
 libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.2.10" % "test",
   "org.jblas" % "jblas" % "1.2.4",
-  "org.scala-lang.modules" %% "scala-collection-compat" % "2.1.2",
+  "org.scala-lang.modules" %% "scala-collection-compat" % "2.5.0",
   "net.java.dev.jna" % "jna" % "5.5.0",
   "net.java.dev.jna" % "jna-platform" % "5.5.0"
 )
 
-crossScalaVersions := List("2.13.7", "2.12.15", "2.11.12")
+crossScalaVersions := List("3.1.0", "3.0.2", "2.13.7", "2.12.15")
 
 scalariformPreferences := scalariformPreferences.value
   .setPreference(DoubleIndentConstructorArguments, true)

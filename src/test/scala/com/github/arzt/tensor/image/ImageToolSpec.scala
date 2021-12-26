@@ -18,7 +18,7 @@ class ImageToolSpec extends AnyFreeSpec with Matchers {
 
     "convert tensor to image (3 byte type) and back" in {
       val value1 = bytes.asTensor(height, width, 4)
-      val source = value1(::, ::, 1 :: -1)
+      val source = value1(All, All, 1 :: -1)
       val image = source.asImage(TYPE_3BYTE_BGR)
       val target = image.asTensor
       image.getWidth === width

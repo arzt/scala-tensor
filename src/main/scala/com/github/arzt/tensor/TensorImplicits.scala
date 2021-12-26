@@ -1,20 +1,20 @@
 package com.github.arzt.tensor
 
 import java.awt.image.BufferedImage
-
 import com.github.arzt.math.positiveMod
 import com.github.arzt.tensor.image.ImageTool
 import com.github.arzt.tensor.image.ImageTool.fromImage
 import com.github.arzt.tensor.mul.DoubleTensorMultiplication
 import com.github.arzt.tensor.mul.FloatTensorMultiplication
 import com.github.arzt.tensor.mul.JavaDoubleTensorMultiplication
+import com.github.arzt.tensor.mul.TensorMultiplication
 
 import scala.language.implicitConversions
 import scala.languageFeature.implicitConversions
 
 object TensorImplicits {
 
-  case class WithOffset[T] private (data: Array[T], offset: Int) {
+  case class WithOffset[T] private[TensorImplicits] (data: Array[T], offset: Int) {
     def asTensor(dim: Int*): Tensor[T] =
       Tensor[T](offset, data, dim: _*)
   }
@@ -170,9 +170,9 @@ object TensorImplicits {
   implicit def boolTensorToIndex(t: Tensor[Boolean]): Index =
     _ => (0 until t.length).view.filter(t.apply)
 
-  val $colon$colon: Index = dimSize => 0 until dimSize
+  val All: Index = dimSize => 0 until dimSize
 
-  val $minus$colon$colon: Index =
+  val Reverse: Index =
     n => (n - 1) to 0 by -1
 
   implicit class IntOps(b: Int) {
@@ -187,11 +187,11 @@ object TensorImplicits {
     def asTensor: Tensor[Byte] = fromImage(image)
   }
 
-  implicit val dtM = {
+  implicit val dtM: TensorMultiplication[Double] = {
     DoubleTensorMultiplication
     JavaDoubleTensorMultiplication
   }
 
-  implicit val ftM = FloatTensorMultiplication
+  implicit val ftM: TensorMultiplication[Float] = FloatTensorMultiplication
 
 }
